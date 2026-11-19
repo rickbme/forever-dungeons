@@ -1,0 +1,443 @@
+-- Forever Dungeons: the map window.
+-- Draws Blizzard's own dungeon map tiles (shipped in the Forever client, loaded by FileDataID),
+-- a floor picker, numbered boss pins and a boss list with kill progress.
+local ADDON, ns = ...
+
+local MAP_W, MAP_H = 600, 400      -- shown size of the 1002 x 668 map area
+local ART_W = 1002                 -- visible width of the legacy map art, in art pixels
+local TILE = 256 * MAP_W / ART_W   -- one 256 px art tile, scaled
+local LIST_W = 230
+local PAD = 10
+local ROW_H = 17
+local MAX_ROWS = 24
+
+local COLORS = {
+    normal = { 0.70, 0.18, 0.12 },
+    nextUp = { 1.00, 0.78, 0.10 },
+    killed = { 0.45, 0.45, 0.45 },
+    fight  = { 1.00, 0.20, 0.20 },
+}
+
+local f -- the window
+local view = { instanceID = nil, floor = nil }
+local fighting -- boss being fought, if any
+local pins, rows = {}, {}
+
+-------------------------------------------------------------------------------
+-- Construction
+-------------------------------------------------------------------------------
+
+local function CircleTexture(parent, layer, size)
+    local t = parent:CreateTexture(nil, layer)
+    t:SetSize(size, size)
+    t:SetColorTexture(1, 1, 1)
+    local mask = parent:CreateMaskTexture()
+    mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    mask:SetAllPoints(t)
+    t:AddMaskTexture(mask)
+    return t
+end
+
+local function SmallButton(parent, text, width)
+    local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    b:SetSize(width, 22)
+    b:SetText(text)
+    return b
+end
+
+local function CreatePin(i)
+    local p = CreateFrame("Button", nil, f.canvas)
+    p:SetSize(22, 22)
+    p:SetFrameLevel(f.canvas:GetFrameLevel() + 5)
+
+    p.glow = CircleTexture(p, "BACKGROUND", 34)
+    p.glow:SetPoint("CENTER")
+    p.glow:SetVertexColor(1, 0.85, 0.2, 0.6)
+    local ag = p.glow:CreateAnimationGroup()
+    ag:SetLooping("REPEAT")
+    local s = ag:CreateAnimation("Scale")
+    s:SetScaleFrom(0.6, 0.6); s:SetScaleTo(1.3, 1.3); s:SetDuration(1.1)
+    local a = ag:CreateAnimation("Alpha")
+    a:SetFromAlpha(0.9); a:SetToAlpha(0); a:SetDuration(1.1)
+    p.pulse = ag
+
+    p.border = CircleTexture(p, "BORDER", 22)
+    p.border:SetPoint("CENTER")
+    p.border:SetVertexColor(0, 0, 0, 0.9)
+    p.dot = CircleTexture(p, "ARTWORK", 18)
+    p.dot:SetPoint("CENTER")
+    p.num = p:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    p.num:SetPoint("CENTER", 0, 0)
+    p.num:SetTextColor(1, 1, 1)
+    p.check = p:CreateTexture(nil, "OVERLAY")
+    p.check:SetSize(16, 16)
+    p.check:SetPoint("CENTER")
+    p.check:SetTexture("Interface\\RaidFrame\\ReadyCheck-Ready")
+
+    p:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    p:SetScript("OnEnter", function(self) ns.ShowBossTooltip(self, self.boss, self.index) end)
+    p:SetScript("OnLeave", GameTooltip_Hide)
+    p:SetScript("OnClick", function(self, button)
+        if button == "RightButton" then
+            ns.SetKilled(view.instanceID, self.boss, not ns.IsKilled(view.instanceID, self.boss))
+        end
+    end)
+    pins[i] = p
+    return p
+end
+
+local function CreateRow(i)
+    local r = CreateFrame("Button", nil, f.list)
+    r:SetSize(LIST_W - 8, ROW_H)
+    r:SetPoint("TOPLEFT", 4, -4 - (i - 1) * ROW_H)
+    r:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
+    r.check = r:CreateTexture(nil, "ARTWORK")
+    r.check:SetSize(14, 14)
+    r.check:SetPoint("LEFT", 2, 0)
+    r.check:SetTexture("Interface\\RaidFrame\\ReadyCheck-Ready")
+    r.text = r:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    r.text:SetPoint("LEFT", 20, 0)
+    r.text:SetPoint("RIGHT", -2, 0)
+    r.text:SetJustifyH("LEFT")
+    r.text:SetWordWrap(false)
+    r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    r:SetScript("OnEnter", function(self) ns.ShowBossTooltip(self, self.boss, self.index) end)
+    r:SetScript("OnLeave", GameTooltip_Hide)
+    r:SetScript("OnClick", function(self, button)
+        if button == "RightButton" then
+            ns.SetKilled(view.instanceID, self.boss, not ns.IsKilled(view.instanceID, self.boss))
+        elseif self.boss.floor then
+            ns.ShowDungeon(view.instanceID, self.boss.floor)
+            local p = pins[self.index]
+            if p and p:IsShown() then p.pulse:Play() end
+        end
+    end)
+    rows[i] = r
+    return r
+end
+
+local function Create()
+    f = CreateFrame("Frame", "ForeverDungeonsFrame", UIParent, "BackdropTemplate")
+    f:SetSize(PAD * 3 + MAP_W + LIST_W, PAD * 2 + 34 + MAP_H + 64)
+    f:SetPoint("CENTER")
+    f:SetFrameStrata("HIGH")
+    f:SetToplevel(true)
+    f:SetClampedToScreen(true)
+    f:SetMovable(true)
+    f:EnableMouse(true)
+    f:RegisterForDrag("LeftButton")
+    f:SetScript("OnDragStart", f.StartMoving)
+    f:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        local point, _, relPoint, x, y = self:GetPoint()
+        ns.db.point = { point, relPoint, x, y }
+    end)
+    f:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+        tile = true, tileSize = 32, edgeSize = 24,
+        insets = { left = 6, right = 6, top = 6, bottom = 6 },
+    })
+    tinsert(UISpecialFrames, "ForeverDungeonsFrame") -- Escape closes it
+
+    local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    close:SetPoint("TOPRIGHT", -4, -4)
+
+    f.title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    f.title:SetPoint("TOPLEFT", PAD + 4, -PAD - 2)
+    f.subtitle = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    f.subtitle:SetPoint("LEFT", f.title, "RIGHT", 10, -1)
+
+    -- Map canvas
+    f.canvas = CreateFrame("Frame", nil, f, "BackdropTemplate")
+    f.canvas:SetSize(MAP_W, MAP_H)
+    f.canvas:SetPoint("TOPLEFT", PAD, -PAD - 30)
+    f.canvas:SetClipsChildren(true)
+    f.canvas:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8" })
+    f.canvas:SetBackdropColor(0, 0, 0, 0.6)
+    f.tiles = {}
+    for row = 0, 2 do
+        for col = 0, 3 do
+            local t = f.canvas:CreateTexture(nil, "BACKGROUND")
+            t:SetSize(TILE, TILE)
+            t:SetPoint("TOPLEFT", col * TILE, -row * TILE)
+            f.tiles[#f.tiles + 1] = t
+        end
+    end
+    f.noArt = f.canvas:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    f.noArt:SetPoint("CENTER")
+    f.noArt:SetWidth(MAP_W - 80)
+    f.noArt:SetText("No map image for this dungeon yet.\n\nThe Forever client has no map art for its new dungeons.\nThe boss list on the right still tracks your progress.")
+
+    -- Floor picker under the map
+    f.prev = SmallButton(f, "<", 28)
+    f.prev:SetPoint("TOPLEFT", f.canvas, "BOTTOMLEFT", 0, -6)
+    f.prev:SetScript("OnClick", function() ns.StepFloor(-1) end)
+    f.next = SmallButton(f, ">", 28)
+    f.next:SetPoint("LEFT", f.prev, "RIGHT", 4, 0)
+    f.next:SetScript("OnClick", function() ns.StepFloor(1) end)
+    f.floorText = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    f.floorText:SetPoint("LEFT", f.next, "RIGHT", 8, 0)
+
+    f.location = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    f.location:SetPoint("TOPLEFT", f.prev, "BOTTOMLEFT", 2, -8)
+    f.location:SetWidth(MAP_W)
+    f.location:SetJustifyH("LEFT")
+
+    -- Boss list
+    f.list = CreateFrame("Frame", nil, f, "BackdropTemplate")
+    f.list:SetSize(LIST_W, MAP_H)
+    f.list:SetPoint("TOPLEFT", f.canvas, "TOPRIGHT", PAD, 0)
+    f.list:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8" })
+    f.list:SetBackdropColor(0, 0, 0, 0.35)
+    f.listHint = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    f.listHint:SetPoint("TOPLEFT", f.list, "BOTTOMLEFT", 2, -4)
+    f.listHint:SetWidth(LIST_W)
+    f.listHint:SetJustifyH("LEFT")
+    f.listHint:SetText("Click: show on map. Right-click: mark killed.")
+
+    -- Buttons along the bottom right
+    f.reset = SmallButton(f, "Reset", 70)
+    f.reset:SetPoint("BOTTOMRIGHT", -PAD - 2, PAD + 2)
+    f.reset:SetScript("OnClick", function() if view.instanceID then ns.ResetRun(view.instanceID) end end)
+    f.reset:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Clear this dungeon's boss kills")
+        GameTooltip:Show()
+    end)
+    f.reset:SetScript("OnLeave", GameTooltip_Hide)
+    f.live = SmallButton(f, "Live view", 80)
+    f.live:SetPoint("RIGHT", f.reset, "LEFT", -4, 0)
+    f.live:SetScript("OnClick", function() ns.LiveView_Toggle() end)
+    f.live:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Live view")
+        GameTooltip:AddLine("Enlarges the minimap while you are in a dungeon. The minimap is the only part of the game that may show your exact position inside an instance; addons cannot read it.", 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    f.live:SetScript("OnLeave", GameTooltip_Hide)
+    f.dungeons = SmallButton(f, "Dungeons", 80)
+    f.dungeons:SetPoint("RIGHT", f.live, "LEFT", -4, 0)
+    f.dungeons:SetScript("OnClick", function(self) ns.ShowDungeonMenu(self) end)
+
+    if ns.db.point then
+        local p = ns.db.point
+        f:ClearAllPoints()
+        f:SetPoint(p[1], UIParent, p[2], p[3], p[4])
+    end
+    ns.ApplyScale()
+    f:Hide()
+end
+
+-------------------------------------------------------------------------------
+-- Drawing
+-------------------------------------------------------------------------------
+
+function ns.ShowBossTooltip(owner, boss, index)
+    if not boss then return end
+    GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+    GameTooltip:SetText(index .. ". " .. boss.name)
+    local id = view.instanceID
+    if fighting == boss then
+        GameTooltip:AddLine("In combat", 1, 0.3, 0.3)
+    elseif ns.IsKilled(id, boss) then
+        GameTooltip:AddLine("Defeated", 0.6, 0.6, 0.6)
+    elseif ns.NextBoss(id) == boss then
+        GameTooltip:AddLine("Next boss", 1, 0.82, 0)
+    end
+    local d = ns.Dungeons[id]
+    if boss.floor and d.floors[boss.floor] then
+        GameTooltip:AddLine("Floor: " .. d.floors[boss.floor].name, 1, 1, 1)
+    elseif #d.floors > 0 then
+        GameTooltip:AddLine("Position not known", 0.6, 0.6, 0.6)
+    end
+    GameTooltip:Show()
+end
+
+local function DrawPins(d)
+    for _, p in ipairs(pins) do p:Hide(); p.pulse:Stop() end
+    if not d.floors[view.floor] then return end
+    local nextBoss = ns.NextBoss(view.instanceID)
+    for i, b in ipairs(d.bosses) do
+        if b.floor == view.floor and b.x then
+            local p = pins[i] or CreatePin(i)
+            p.boss, p.index = b, i
+            p:ClearAllPoints()
+            -- Pin positions are fractions of the 1002 x 668 map area.
+            p:SetPoint("CENTER", f.canvas, "TOPLEFT", b.x * MAP_W, -b.y * MAP_H)
+            local killed = ns.IsKilled(view.instanceID, b)
+            local c = (fighting == b and COLORS.fight) or (killed and COLORS.killed)
+                or (b == nextBoss and COLORS.nextUp) or COLORS.normal
+            p.dot:SetVertexColor(c[1], c[2], c[3])
+            p.num:SetText(killed and "" or i)
+            p.num:SetTextColor(b == nextBoss and 0 or 1, b == nextBoss and 0 or 1, b == nextBoss and 0 or 1)
+            p.check:SetShown(killed)
+            p.glow:SetShown(b == nextBoss or fighting == b)
+            if b == nextBoss or fighting == b then p.pulse:Play() end
+            p:Show()
+        end
+    end
+end
+
+local function DrawList(d)
+    local nextBoss = ns.NextBoss(view.instanceID)
+    for i = 1, math.max(#rows, #d.bosses) do
+        local b = d.bosses[i]
+        if b and i <= MAX_ROWS then
+            local r = rows[i] or CreateRow(i)
+            r.boss, r.index = b, i
+            local killed = ns.IsKilled(view.instanceID, b)
+            local color = (fighting == b and "ffff4040") or (killed and "ff808080")
+                or (b == nextBoss and "ffffd100") or "ffffffff"
+            local where = ""
+            if b.floor and b.floor ~= view.floor and #d.floors > 1 then where = " |cff808080(other floor)|r" end
+            r.text:SetText(("|c%s%d. %s|r%s"):format(color, i, b.name, where))
+            r.check:SetShown(killed)
+            r:Show()
+        elseif rows[i] then
+            rows[i]:Hide()
+        end
+    end
+end
+
+function ns.Refresh()
+    if not (f and f:IsShown() and view.instanceID) then return end
+    local d = ns.Dungeons[view.instanceID]
+    local hasArt = #d.floors > 0
+    local floor = hasArt and d.floors[view.floor]
+
+    for i, t in ipairs(f.tiles) do
+        if floor then t:SetTexture(floor.tiles[i]); t:Show() else t:Hide() end
+    end
+    f.noArt:SetShown(not hasArt)
+
+    local killed, total = ns.KillCount(view.instanceID)
+    f.title:SetText(d.name)
+    local tag = d.raid and "Raid" or "Level " .. d.levels
+    f.subtitle:SetText(("%s   |cffffd100%d/%d bosses|r%s"):format(tag, killed, total, d.new and "   |cff20ff20New in Forever|r" or ""))
+
+    f.prev:SetShown(#d.floors > 1)
+    f.next:SetShown(#d.floors > 1)
+    if floor then
+        f.floorText:SetText(#d.floors > 1 and ("Floor %d of %d: %s"):format(view.floor, #d.floors, floor.name) or floor.name)
+    else
+        f.floorText:SetText("")
+    end
+    f.prev:SetEnabled(view.floor ~= nil and view.floor > 1)
+    f.next:SetEnabled(view.floor ~= nil and view.floor < #d.floors)
+    f.live:SetText(ns.db.liveView and "Live: on" or "Live view")
+
+    DrawPins(d)
+    DrawList(d)
+    ns.UpdateLocationText()
+end
+
+-- The "where am I" line: the named area from the game, plus the next boss.
+function ns.UpdateLocationText()
+    if not (f and f:IsShown() and view.instanceID) then return end
+    local here = ns.CurrentInstance()
+    local parts = {}
+    if here == view.instanceID then
+        local sub = ns.Safe(GetSubZoneText())
+        if sub and sub ~= "" then parts[#parts + 1] = "Area: |cffffffff" .. sub .. "|r" end
+    else
+        parts[#parts + 1] = "|cff808080Viewing only (you are not in this dungeon)|r"
+    end
+    local nextBoss, i = ns.NextBoss(view.instanceID)
+    if fighting then
+        parts[#parts + 1] = "Fighting: |cffff4040" .. fighting.name .. "|r"
+    elseif nextBoss then
+        parts[#parts + 1] = ("Next boss: |cffffd100%d. %s|r"):format(i, nextBoss.name)
+    else
+        parts[#parts + 1] = "|cff20ff20All bosses defeated|r"
+    end
+    f.location:SetText(table.concat(parts, "     "))
+end
+
+-------------------------------------------------------------------------------
+-- Public API used by Core.lua
+-------------------------------------------------------------------------------
+
+function ns.ShowDungeon(instanceID, floor)
+    if not f then Create() end
+    local d = ns.Dungeons[instanceID]
+    if not d then return end
+    if view.instanceID ~= instanceID then fighting = nil end
+    view.instanceID = instanceID
+    if #d.floors > 0 then
+        floor = floor or ns.db.floors[instanceID] or 1
+        view.floor = math.max(1, math.min(#d.floors, floor))
+        ns.db.floors[instanceID] = view.floor
+    else
+        view.floor = nil
+    end
+    ns.db.lastViewed = instanceID
+    f:Show()
+    ns.Refresh()
+end
+
+-- Turn to a floor, but only if the map is already showing that dungeon.
+function ns.ShowFloorIfViewing(instanceID, floor)
+    if f and f:IsShown() and view.instanceID == instanceID then
+        if view.floor ~= floor then ns.ShowDungeon(instanceID, floor) end
+    elseif ns.db then
+        ns.db.floors[instanceID] = floor
+    end
+end
+
+function ns.StepFloor(delta)
+    if view.instanceID and view.floor then ns.ShowDungeon(view.instanceID, view.floor + delta) end
+end
+
+function ns.SetFighting(boss)
+    fighting = boss
+    ns.Refresh()
+end
+
+function ns.ViewedInstance() return view.instanceID end
+
+function ns.HideMap() if f then f:Hide() end end
+
+function ns.ToggleMap()
+    if f and f:IsShown() then return f:Hide() end
+    local id = ns.CurrentInstance()
+    if id then
+        ns.ShowDungeon(id, ns.GuessFloor(id))
+    elseif ns.db.lastViewed and ns.Dungeons[ns.db.lastViewed] then
+        ns.ShowDungeon(ns.db.lastViewed)
+    else
+        ns.ShowDungeonMenu()
+    end
+end
+
+function ns.ApplyScale()
+    if f then f:SetScale(ns.db.scale or 1) end
+end
+
+function ns.ShowDungeonMenu(owner)
+    if not (MenuUtil and MenuUtil.CreateContextMenu) then
+        ns.Print("Dungeons:")
+        for _, id in ipairs(ns.DungeonOrder) do ns.Print(id, ns.Dungeons[id].name) end
+        return
+    end
+    MenuUtil.CreateContextMenu(owner or UIParent, function(_, root)
+        root:CreateTitle("Dungeons")
+        local raids = {}
+        for _, id in ipairs(ns.DungeonOrder) do
+            local d = ns.Dungeons[id]
+            if d.raid then
+                raids[#raids + 1] = id
+            else
+                local label = ("%s |cff808080(%s)|r%s"):format(d.name, d.levels, d.new and " |cff20ff20new|r" or "")
+                root:CreateButton(label, function() ns.ShowDungeon(id) end)
+            end
+        end
+        if #raids > 0 then
+            root:CreateDivider()
+            root:CreateTitle("Raids")
+            for _, id in ipairs(raids) do
+                root:CreateButton(ns.Dungeons[id].name, function() ns.ShowDungeon(id) end)
+            end
+        end
+    end)
+end

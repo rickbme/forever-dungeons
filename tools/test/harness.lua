@@ -1,0 +1,194 @@
+-- Offline test harness: loads the addon against a minimal stub of the WoW API and plays
+-- through a dungeon run (enter, floor changes, boss kills, reset, leave).
+-- Run from the repository root:  lua5.1 tools/test/harness.lua
+-- This only checks the addon's own logic; it cannot show what the frames look like in game.
+
+local ADDON = "ForeverDungeons"
+local failures = 0
+local out = print
+local function check(cond, msg)
+    if cond then out("  ok   " .. msg) else failures = failures + 1; out("  FAIL " .. msg) end
+end
+
+-------------------------------------------------------------------------------
+-- WoW API stubs
+-------------------------------------------------------------------------------
+local game = { inInstance = false, instanceID = nil, instanceType = "none", subzone = "", combat = false, minimapScale = 1 }
+local printed = {}
+
+local realPrint = print
+_G.print = function(...)
+    local t = {}
+    for i = 1, select("#", ...) do t[#t + 1] = tostring(select(i, ...)) end
+    printed[#printed + 1] = table.concat(t, " ")
+end
+
+local function noop() end
+local widgetMeta
+local function NewWidget()
+    local w = { shown = true, scripts = {}, points = {}, text = "", events = {} }
+    return setmetatable(w, widgetMeta)
+end
+widgetMeta = {
+    __index = function(self, k)
+        local methods = {
+            Show = function(s) s.shown = true end,
+            Hide = function(s) s.shown = false end,
+            IsShown = function(s) return s.shown end,
+            SetShown = function(s, v) s.shown = not not v end,
+            SetScript = function(s, n, fn) s.scripts[n] = fn end,
+            GetScript = function(s, n) return s.scripts[n] end,
+            SetText = function(s, t) s.text = t end,
+            GetText = function(s) return s.text end,
+            SetTexture = function(s, t) s.texture = t end,
+            SetEnabled = function(s, v)
+                assert(type(v) == "boolean", "SetEnabled needs a boolean")
+                s.enabled = v
+            end,
+            SetScale = function(s, v) s.scale = v end,
+            GetScale = function(s) return rawget(s, "scale") or 1 end,
+            GetPoint = function() return "CENTER", nil, "CENTER", 0, 0 end,
+            GetFrameLevel = function() return 1 end,
+            CreateTexture = function() return NewWidget() end,
+            CreateFontString = function() return NewWidget() end,
+            CreateMaskTexture = function() return NewWidget() end,
+            CreateAnimationGroup = function() return NewWidget() end,
+            CreateAnimation = function() return NewWidget() end,
+            RegisterEvent = function(s, e) s.events[e] = true end,
+            UnregisterEvent = function(s, e) s.events[e] = nil end,
+        }
+        return methods[k] or noop
+    end,
+}
+
+local eventFrames = {}
+function CreateFrame(kind, name)
+    local w = NewWidget()
+    if kind == "Frame" and not name then eventFrames[#eventFrames + 1] = w end
+    if name then _G[name] = w end
+    return w
+end
+UIParent = NewWidget()
+GameTooltip = NewWidget()
+GameTooltip_Hide = noop
+Minimap = NewWidget()
+UISpecialFrames = {}
+tinsert = table.insert
+SlashCmdList = {}
+INSTANCE_RESET_SUCCESS = "%s has been reset."
+issecretvalue = function(v) return type(v) == "table" and v.secret end
+function IsInInstance() return game.inInstance, game.instanceType end
+function GetInstanceInfo()
+    return game.instanceName or "Azeroth", game.instanceType, 1, "Normal", 5, 0, false, game.instanceID
+end
+function GetSubZoneText() return game.subzone end
+function InCombatLockdown() return game.combat end
+time = os.time
+
+local function Fire(event, ...)
+    for _, fr in ipairs(eventFrames) do
+        if fr.events and fr.events[event] and fr.scripts.OnEvent then fr.scripts.OnEvent(fr, event, ...) end
+    end
+end
+
+-------------------------------------------------------------------------------
+-- Load the addon like the client does: each file gets (addonName, namespace)
+-------------------------------------------------------------------------------
+local ns = {}
+for _, file in ipairs({ "Data/Dungeons.lua", "Core.lua", "MapFrame.lua", "LiveView.lua" }) do
+    local chunk = assert(loadfile("ForeverDungeons/" .. file))
+    chunk(ADDON, ns)
+end
+Fire("ADDON_LOADED", ADDON)
+
+realPrint("Data")
+local n = 0
+for id, d in pairs(ns.Dungeons) do
+    n = n + 1
+    for _, f in ipairs(d.floors) do
+        check(#f.tiles == 12, d.name .. " / " .. f.name .. " has 12 tiles")
+    end
+    for _, b in ipairs(d.bosses) do
+        if b.floor then
+            check(d.floors[b.floor] and b.x >= 0 and b.x <= 1 and b.y >= 0 and b.y <= 1,
+                d.name .. " / " .. b.name .. " pin is on a real floor and inside the map")
+        end
+    end
+end
+check(n == #ns.DungeonOrder, "every dungeon is in DungeonOrder")
+
+realPrint("Entering Blackfathom Deeps")
+game.inInstance, game.instanceType, game.instanceID, game.instanceName = true, "party", 48, "Blackfathom Deeps"
+Fire("PLAYER_ENTERING_WORLD")
+check(ForeverDungeonsFrame and ForeverDungeonsFrame:IsShown(), "map opens automatically")
+check(ns.ViewedInstance() == 48, "map shows Blackfathom Deeps")
+check(ForeverDungeonsFrame.title.text == "Blackfathom Deeps", "title is the dungeon name")
+check(ForeverDungeonsFrame.tiles[1].texture == ns.Dungeons[48].floors[1].tiles[1], "first floor tiles are drawn")
+
+realPrint("Walking into a named area that is also a floor")
+game.subzone = "Moonshrine Sanctum"
+Fire("ZONE_CHANGED_INDOORS")
+check(ForeverDungeonsFrame.tiles[1].texture == ns.Dungeons[48].floors[2].tiles[1], "floor follows the sub-zone")
+check(ForeverDungeonsFrame.location.text:find("Moonshrine Sanctum", 1, true), "location line shows the area")
+
+realPrint("Killing the first boss")
+local first = ns.Dungeons[48].bosses[1]
+Fire("ENCOUNTER_START", first.id, first.name, 1, 5)
+check(ForeverDungeonsFrame.location.text:find("Fighting", 1, true), "location line shows the fight")
+Fire("ENCOUNTER_END", first.id, first.name, 1, 5, 1)
+check(ns.IsKilled(48, first), "boss is marked killed")
+check(select(1, ns.KillCount(48)) == 1, "kill count is 1")
+check(ns.NextBoss(48) == ns.Dungeons[48].bosses[2], "next boss advances")
+check(ForeverDungeonsFrame.subtitle.text:find("1/" .. #ns.Dungeons[48].bosses, 1, true), "subtitle shows progress")
+
+realPrint("A wipe does not count as a kill")
+local second = ns.Dungeons[48].bosses[2]
+Fire("ENCOUNTER_END", second.id, second.name, 1, 5, 0)
+check(not ns.IsKilled(48, second), "wipe leaves the boss alive")
+
+realPrint("Secret values are ignored, the name still matches")
+Fire("ENCOUNTER_END", { secret = true }, second.name, 1, 5, 1)
+check(ns.IsKilled(48, second), "kill found by name when the ID is secret")
+Fire("ENCOUNTER_END", { secret = true }, { secret = true }, 1, 5, { secret = true })
+check(select(1, ns.KillCount(48)) == 2, "fully secret payload changes nothing")
+
+realPrint("BOSS_KILL after ENCOUNTER_END does not double count")
+Fire("BOSS_KILL", second.id, second.name)
+check(select(1, ns.KillCount(48)) == 2, "still 2 kills")
+
+realPrint("Instance reset message")
+Fire("CHAT_MSG_SYSTEM", "Blackfathom Deeps has been reset.")
+check(select(1, ns.KillCount(48)) == 0, "kills cleared by the reset message")
+
+realPrint("Live view")
+SlashCmdList.FOREVERDUNGEONS("live")
+check(Minimap:GetScale() == ns.db.liveScale, "minimap enlarged inside the dungeon")
+game.combat = true
+
+realPrint("Leaving the dungeon in combat")
+game.inInstance, game.instanceType, game.instanceID, game.instanceName, game.subzone = false, "none", nil, nil, ""
+Fire("PLAYER_ENTERING_WORLD")
+check(not ForeverDungeonsFrame:IsShown(), "map closes on leaving")
+check(Minimap:GetScale() == ns.db.liveScale, "minimap left alone during combat")
+game.combat = false
+Fire("PLAYER_REGEN_ENABLED")
+check(Minimap:GetScale() == 1, "minimap restored after combat")
+
+realPrint("Slash command opens the last dungeon outside")
+SlashCmdList.FOREVERDUNGEONS("")
+check(ForeverDungeonsFrame:IsShown() and ns.ViewedInstance() == 48, "/fd reopens the last viewed dungeon")
+check(ForeverDungeonsFrame.location.text:find("Viewing only", 1, true), "outside, the map says it is only a preview")
+
+realPrint("A new Forever dungeon without art")
+ns.ShowDungeon(3065)
+check(ForeverDungeonsFrame.noArt:IsShown(), "no-art message shows")
+check(not ForeverDungeonsFrame.tiles[1]:IsShown(), "no tiles drawn")
+
+realPrint("Unknown instance prints a note")
+printed = {}
+game.inInstance, game.instanceType, game.instanceID, game.instanceName = true, "party", 99999, "Somewhere New"
+Fire("PLAYER_ENTERING_WORLD")
+check(printed[1] and printed[1]:find("No map data for Somewhere New", 1, true), "note printed")
+
+realPrint(failures == 0 and "\nAll checks passed." or ("\n" .. failures .. " check(s) failed."))
+os.exit(failures == 0 and 0 or 1)

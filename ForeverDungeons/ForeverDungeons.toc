@@ -1,0 +1,18 @@
+## Interface: 16001
+## AllowLoadGameType: forever
+## ExcludeLoadGameType: standard, classic
+## Title: Forever Dungeons
+## Notes: Shows the dungeon map when you enter a dungeon in WoW Forever, with floors, boss pins and kill progress.
+## Author: rickbme
+## Version: 0.1.0
+## Category: Map
+## IconTexture: Interface\Icons\INV_Misc_Map_01
+## SavedVariables: ForeverDungeonsDB
+## AddonCompartmentFunc: ForeverDungeons_OnCompartmentClick
+## AddonCompartmentFuncOnEnter: ForeverDungeons_OnCompartmentEnter
+## AddonCompartmentFuncOnLeave: ForeverDungeons_OnCompartmentLeave
+
+Data\Dungeons.lua
+Core.lua
+MapFrame.lua
+LiveView.lua
