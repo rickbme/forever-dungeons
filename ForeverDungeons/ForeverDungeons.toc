@@ -16,3 +16,4 @@ Data\Dungeons.lua
 Core.lua
 MapFrame.lua
 LiveView.lua
+MinimapButton.lua

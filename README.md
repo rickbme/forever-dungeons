@@ -4,6 +4,9 @@ A World of Warcraft: Forever addon that opens the dungeon's map as soon as you w
 dungeon. It shows every floor, numbered boss pins, and which bosses you have already killed.
 
 - **Automatic**: zone into a dungeon and the map opens on the right floor. Leave and it closes.
+- **Minimap button**: left-click shows or hides the map whenever you want it, so it never has to
+  stay in your way. Right-click picks any dungeon, and dragging moves the button around the minimap.
+  Close the map with the button, the X or Escape, and it stays closed until you enter the next dungeon.
 - **Blizzard's own maps** for the 20 classic dungeons and Onyxia's Lair (53 floors). The Forever
   client has no dungeon maps of its own, but it still ships the old map textures. The addon draws
   them by file ID, so no artwork is bundled.
@@ -50,6 +53,7 @@ in combat. Your normal size comes back when you leave the dungeon. Turn it on wi
 | `/fd auto` | toggle opening the map automatically |
 | `/fd follow` | toggle turning to the next boss's floor after a kill |
 | `/fd live` | toggle live view (enlarged minimap in dungeons) |
+| `/fd button` | show or hide the minimap button |
 | `/fd scale 1.2` | map window size, 0.5 to 2 |
 
 ## Coverage

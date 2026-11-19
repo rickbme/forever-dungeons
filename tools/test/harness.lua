@@ -49,6 +49,9 @@ widgetMeta = {
             GetScale = function(s) return rawget(s, "scale") or 1 end,
             GetPoint = function() return "CENTER", nil, "CENTER", 0, 0 end,
             GetFrameLevel = function() return 1 end,
+            GetWidth = function() return 140 end,
+            GetCenter = function() return 100, 100 end,
+            GetEffectiveScale = function() return 1 end,
             CreateTexture = function() return NewWidget() end,
             CreateFontString = function() return NewWidget() end,
             CreateMaskTexture = function() return NewWidget() end,
@@ -83,6 +86,8 @@ function GetInstanceInfo()
 end
 function GetSubZoneText() return game.subzone end
 function InCombatLockdown() return game.combat end
+local cursor = { 0, 0 }
+function GetCursorPosition() return cursor[1], cursor[2] end
 time = os.time
 
 local function Fire(event, ...)
@@ -95,7 +100,7 @@ end
 -- Load the addon like the client does: each file gets (addonName, namespace)
 -------------------------------------------------------------------------------
 local ns = {}
-for _, file in ipairs({ "Data/Dungeons.lua", "Core.lua", "MapFrame.lua", "LiveView.lua" }) do
+for _, file in ipairs({ "Data/Dungeons.lua", "Core.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua" }) do
     local chunk = assert(loadfile("ForeverDungeons/" .. file))
     chunk(ADDON, ns)
 end
@@ -116,6 +121,16 @@ for id, d in pairs(ns.Dungeons) do
     end
 end
 check(n == #ns.DungeonOrder, "every dungeon is in DungeonOrder")
+
+realPrint("Minimap button")
+local mb = ForeverDungeonsMinimapButton
+check(mb and mb:IsShown(), "minimap button is created and shown")
+cursor[1], cursor[2] = 100, 200 -- straight above the minimap centre
+mb.scripts.OnDragStart(mb)
+mb.scripts.OnUpdate(mb)
+mb.scripts.OnDragStop(mb)
+check(math.abs(ns.db.minimapAngle - 90) < 0.01, "dragging moves the button (angle 90)")
+check(mb.scripts.OnUpdate == nil, "dragging stops on release")
 
 realPrint("Entering Blackfathom Deeps")
 game.inInstance, game.instanceType, game.instanceID, game.instanceName = true, "party", 48, "Blackfathom Deeps"
@@ -178,6 +193,16 @@ realPrint("Slash command opens the last dungeon outside")
 SlashCmdList.FOREVERDUNGEONS("")
 check(ForeverDungeonsFrame:IsShown() and ns.ViewedInstance() == 48, "/fd reopens the last viewed dungeon")
 check(ForeverDungeonsFrame.location.text:find("Viewing only", 1, true), "outside, the map says it is only a preview")
+
+realPrint("Minimap button toggles the map")
+mb.scripts.OnClick(mb, "LeftButton")
+check(not ForeverDungeonsFrame:IsShown(), "click hides the map")
+mb.scripts.OnClick(mb, "LeftButton")
+check(ForeverDungeonsFrame:IsShown(), "click shows it again")
+SlashCmdList.FOREVERDUNGEONS("button")
+check(not mb:IsShown(), "/fd button hides the button")
+SlashCmdList.FOREVERDUNGEONS("button")
+check(mb:IsShown(), "/fd button shows it again")
 
 realPrint("A new Forever dungeon without art")
 ns.ShowDungeon(3065)

@@ -15,6 +15,8 @@ ns.DEFAULTS = {
     scale = 1,
     liveView = false,     -- enlarge the minimap while inside a dungeon
     liveScale = 1.8,
+    minimapButton = true, -- show the minimap button
+    minimapAngle = 200,   -- its position around the minimap, in degrees
     floors = {},          -- [instanceID] = last floor viewed
     runs = {},            -- [instanceID] = { killed = { [key] = true }, last = time() }
 }
@@ -243,6 +245,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
             if ns.db[k] == nil then ns.db[k] = type(v) == "table" and {} or v end
         end
         self:UnregisterEvent("ADDON_LOADED")
+        ns.MinimapButton_Update()
         for _, e in ipairs({ "PLAYER_ENTERING_WORLD", "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED",
             "ZONE_CHANGED_INDOORS", "ENCOUNTER_START", "ENCOUNTER_END", "BOSS_KILL",
             "CHAT_MSG_SYSTEM", "PLAYER_REGEN_ENABLED" }) do
@@ -279,6 +282,7 @@ local HELP = {
     "/fd auto - toggle opening the map automatically in dungeons",
     "/fd follow - toggle turning to the next boss's floor after a kill",
     "/fd live - toggle the enlarged minimap inside dungeons",
+    "/fd button - show or hide the minimap button",
     "/fd scale <0.5-2> - map window size",
 }
 
@@ -304,6 +308,8 @@ SlashCmdList.FOREVERDUNGEONS = function(msg)
         Print("Follow boss progress between floors: " .. (ns.db.followProgress and "on" or "off"))
     elseif cmd == "live" then
         ns.LiveView_Toggle()
+    elseif cmd == "button" then
+        ns.MinimapButton_Toggle()
     elseif cmd == "scale" and tonumber(arg) then
         ns.db.scale = math.min(2, math.max(0.5, tonumber(arg)))
         ns.ApplyScale()
