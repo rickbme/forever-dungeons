@@ -100,7 +100,7 @@ end
 -- Load the addon like the client does: each file gets (addonName, namespace)
 -------------------------------------------------------------------------------
 local ns = {}
-for _, file in ipairs({ "Data/Dungeons.lua", "Core.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua" }) do
+for _, file in ipairs({ "Data/Dungeons.lua", "Data/DungeonDrawn.lua", "Data/DungeonMinimap.lua", "Data/Merge.lua", "Core.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua" }) do
     local chunk = assert(loadfile("ForeverDungeons/" .. file))
     chunk(ADDON, ns)
 end
@@ -121,6 +121,26 @@ for id, d in pairs(ns.Dungeons) do
     end
 end
 check(n == #ns.DungeonOrder, "every dungeon is in DungeonOrder")
+-- every dungeon the game has no map for gets floors from Reyes' drawings or the minimap data,
+-- except the ones that are still encrypted in the client
+for _, id in ipairs({ 3065, 2999, 2959, 2998, 2970, 3039, 2974, 3001 }) do
+    local d = ns.Dungeons[id]
+    check(#d.floors > 0, d.name .. " has floors")
+    check(d.floors[1] and d.floors[1].credit == "Santiago Reyes", d.name .. " uses the drawn map and credits the artist")
+end
+check(#ns.Dungeons[2994].floors == 0, "Alcaz Prison has no art yet")
+for id, d in pairs(ns.Dungeons) do
+    for _, f in ipairs(d.floors) do
+        for _, t in ipairs(f.tiles) do
+            if type(t) == "string" then
+                local path = t:gsub("^Interface\\AddOns\\", ""):gsub("\\", "/") .. ".tga"
+                local fh = io.open("./" .. path)
+                check(fh ~= nil, "tile exists: " .. path)
+                if fh then fh:close() end
+            end
+        end
+    end
+end
 
 realPrint("Minimap button")
 local mb = ForeverDungeonsMinimapButton
@@ -205,9 +225,15 @@ SlashCmdList.FOREVERDUNGEONS("button")
 check(mb:IsShown(), "/fd button shows it again")
 
 realPrint("A new Forever dungeon without art")
-ns.ShowDungeon(3065)
+ns.ShowDungeon(2994)
 check(ForeverDungeonsFrame.noArt:IsShown(), "no-art message shows")
 check(not ForeverDungeonsFrame.tiles[1]:IsShown(), "no tiles drawn")
+
+realPrint("A new Forever dungeon with a drawn map shows the credit")
+ns.ShowDungeon(3065)
+check(not ForeverDungeonsFrame.noArt:IsShown(), "no no-art message")
+check(ForeverDungeonsFrame.tiles[1]:IsShown(), "tiles drawn")
+check(ForeverDungeonsFrame.credit:GetText():find("Santiago Reyes", 1, true), "artist is credited on the map")
 
 realPrint("Unknown instance prints a note")
 printed = {}

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(lua5.1:*)",
+      "Bash(luac5.1:*)",
+      "Bash(python3 -P tools/test/lint.py)",
+      "Bash(python3 -P tools/gen_data.py:*)",
+      "Bash(python3 -P tools/package.py:*)",
+      "WebFetch(domain:warcraft.wiki.gg)",
+      "WebFetch(domain:wago.tools)",
+      "WebFetch(domain:www.curseforge.com)"
+    ]
+  }
+}

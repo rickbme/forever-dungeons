@@ -1,0 +1,23 @@
+name: test
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: sudo apt-get install -y lua5.1
+      - name: Syntax
+        run: for f in ForeverDungeons/*.lua ForeverDungeons/Data/*.lua; do luac5.1 -p "$f"; done
+      - run: python3 -P tools/test/lint.py
+      - run: lua5.1 tools/test/harness.lua
+      - name: The tools at least compile
+        run: python3 -m compileall -q tools

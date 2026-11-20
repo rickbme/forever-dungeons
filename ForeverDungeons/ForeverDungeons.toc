@@ -13,6 +13,9 @@
 ## AddonCompartmentFuncOnLeave: ForeverDungeons_OnCompartmentLeave
 
 Data\Dungeons.lua
+Data\DungeonDrawn.lua
+Data\DungeonMinimap.lua
+Data\Merge.lua
 Core.lua
 MapFrame.lua
 LiveView.lua

@@ -164,6 +164,9 @@ local function Create()
             f.tiles[#f.tiles + 1] = t
         end
     end
+    f.credit = f.canvas:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    f.credit:SetPoint("BOTTOMRIGHT", -8, 6)
+    f.credit:SetTextColor(1, 0.82, 0)
     f.noArt = f.canvas:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     f.noArt:SetPoint("CENTER")
     f.noArt:SetWidth(MAP_W - 80)
@@ -310,6 +313,7 @@ function ns.Refresh()
         if floor then t:SetTexture(floor.tiles[i]); t:Show() else t:Hide() end
     end
     f.noArt:SetShown(not hasArt)
+    f.credit:SetText(floor and floor.credit and ("Map by " .. floor.credit .. " - sreyesmaps.com") or "")
 
     local killed, total = ns.KillCount(view.instanceID)
     f.title:SetText(d.name)

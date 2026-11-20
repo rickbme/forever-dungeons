@@ -128,6 +128,9 @@ function ns.FloorForSubzone(instanceID)
     if not (d and sub and sub ~= "") then return nil end
     for i, f in ipairs(d.floors) do
         if ns.Norm(f.name) == sub then return i end
+        for _, name in ipairs(f.subzones or {}) do
+            if ns.Norm(name) == sub then return i end
+        end
     end
 end
 
