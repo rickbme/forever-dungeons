@@ -21,6 +21,9 @@ Work in progress (beta): it has not been tested in the live game yet.
   floor of a boss when you pull it, and to the floor of the next boss after a kill.
 - **Live view (optional)**: enlarges the minimap while you are in a dungeon (see below).
 - **Browse anywhere**: `/fd list` (or right-click in the addon compartment) opens any dungeon's map.
+- **World map**: the **World map** button (or the minimap button's right-click menu, or `/fd world`) zooms out
+  to Azeroth or either continent with every dungeon and raid entrance marked. Hover an entrance for levels and
+  boss progress, click it to open that dungeon's map. The map art is the game's own, drawn from the client.
 - **No typing needed**: everything has a button. The map window has **Options** and **Dungeons**
   buttons, the minimap button's right-click menu lists every dungeon plus Options, and a short welcome
   popup explains the basics the first time you play. There is also an entry in the game's
@@ -59,6 +62,7 @@ in combat. Your normal size comes back when you leave the dungeon. Turn it on wi
 |---|---|
 | `/fd` (or `/nfdm`) | show or hide the map (current dungeon, or the last one viewed) |
 | `/fd list` | pick any dungeon to view |
+| `/fd world` | show or hide the world map |
 | `/fd options` | open the options window |
 | `/fd welcome` | show the welcome tips again |
 | `/fd reset` | clear boss kills for the current dungeon (also done automatically when the game resets it) |

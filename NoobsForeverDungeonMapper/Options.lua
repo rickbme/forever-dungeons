@@ -115,7 +115,7 @@ end
 
 local function CreateOptions()
     opt = CreateFrame("Frame", "NoobsForeverDungeonMapperOptions", UIParent, "BackdropTemplate")
-    opt:SetSize(WIDTH, 570)
+    opt:SetSize(WIDTH, 600)
     opt:SetPoint("CENTER")
     opt:SetFrameStrata("DIALOG")
     opt:SetToplevel(true)
@@ -189,7 +189,10 @@ local function CreateOptions()
     opt.pick = Button(opt, "Choose a dungeon", 160)
     opt.pick:SetPoint("LEFT", opt.tips, "RIGHT", 10, 0)
     opt.pick:SetScript("OnClick", function(self) ns.ShowDungeonMenu(self) end)
-    y = y - 40
+    opt.world = Button(opt, "Open the world map", 330)
+    opt.world:SetPoint("TOPLEFT", opt.tips, "BOTTOMLEFT", 0, -6)
+    opt.world:SetScript("OnClick", function() ns.ShowWorldMap() end)
+    y = y - 70
 
     Header(opt, "For testers and mapmakers", y)
     y = y - 24
@@ -314,8 +317,11 @@ end
 BINDING_HEADER_NOOBSFOREVERDUNGEONMAPPER = "Noobs Forever Dungeon Mapper"
 BINDING_NAME_NOOBSFOREVERDUNGEONMAPPER_TOGGLE = "Show or hide the dungeon map"
 BINDING_NAME_NOOBSFOREVERDUNGEONMAPPER_OPTIONS = "Open the options"
+BINDING_NAME_NOOBSFOREVERDUNGEONMAPPER_WORLD = "Show or hide the world map"
 function NoobsForeverDungeonMapper_Binding(action)
-    if action == "options" then ns.ToggleOptions() else ns.ToggleMap() end
+    if action == "options" then ns.ToggleOptions()
+    elseif action == "world" then ns.ToggleWorldMap()
+    else ns.ToggleMap() end
 end
 
 function ns.Options_Init()

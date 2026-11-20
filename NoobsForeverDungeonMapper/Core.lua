@@ -304,6 +304,7 @@ local HELP = {
     "/fd options - open the options window (no typing needed: right-click the minimap button, then Options)",
     "/fd welcome - show the welcome tips again",
     "/fd list - pick any dungeon to view",
+    "/fd world - show the world map with every dungeon entrance",
     "/fd reset - clear boss kills for the current dungeon",
     "/fd auto - toggle opening the map automatically in dungeons",
     "/fd follow - toggle turning to the next boss's floor after a kill",
@@ -337,6 +338,8 @@ SlashCmdList.NOOBSFOREVERDUNGEONMAPPER = function(msg)
         ns.LiveView_Toggle()
     elseif cmd == "button" then
         ns.MinimapButton_Toggle()
+    elseif cmd == "world" then
+        ns.ToggleWorldMap()
     elseif cmd == "options" or cmd == "config" or cmd == "settings" then
         ns.ToggleOptions()
     elseif cmd == "welcome" or cmd == "help" then

@@ -108,7 +108,7 @@ end
 -- Load the addon like the client does: each file gets (addonName, namespace)
 -------------------------------------------------------------------------------
 local ns = {}
-for _, file in ipairs({ "Data/Dungeons.lua", "Data/DungeonDrawn.lua", "Data/DungeonMinimap.lua", "Data/DungeonBosses.lua", "Data/BossPlaces.lua", "Data/Merge.lua", "Data/Anchors.lua", "Core.lua", "Probe.lua", "BossPlacer.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua", "Options.lua" }) do
+for _, file in ipairs({ "Data/Dungeons.lua", "Data/DungeonDrawn.lua", "Data/DungeonMinimap.lua", "Data/WorldMaps.lua", "Data/DungeonBosses.lua", "Data/BossPlaces.lua", "Data/Merge.lua", "Data/Anchors.lua", "Core.lua", "Probe.lua", "BossPlacer.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua", "WorldMap.lua", "Options.lua" }) do
     local chunk = assert(loadfile("NoobsForeverDungeonMapper/" .. file))
     chunk(ADDON, ns)
 end
@@ -335,6 +335,41 @@ check(oggle.x == nil and not ns.HasBossPlace(389, oggle), "removing a placed pin
 ns.db.placer = false
 ns.CancelPlacing()
 ns.HideMap()
+
+realPrint("World map")
+for _, m in ipairs(ns.WorldMaps) do
+    check(#m.tiles == 12, m.name .. " has 12 tiles")
+    for _, p in ipairs(m.pins) do
+        check(p[1] >= 0 and p[1] <= 1 and p[2] >= 0 and p[2] <= 1 and #p[3] > 0, m.name .. " pin is on the map")
+    end
+end
+local entrance = {}
+for _, m in ipairs(ns.WorldMaps) do
+    if m.uiMapID ~= 947 then
+        for _, p in ipairs(m.pins) do for _, i in ipairs(p[3]) do entrance[i[1]] = true end end
+    end
+end
+for _, id in ipairs(ns.DungeonOrder) do check(entrance[id], ns.Dungeons[id].name .. " has an entrance on a continent") end
+ns.ShowWorldMap(1415)
+local world = NoobsForeverDungeonMapperWorld
+check(world:IsShown() and world.title:GetText() == "Eastern Kingdoms", "the Eastern Kingdoms map shows")
+check(world.tiles[1].texture ~= nil, "continent tiles are drawn")
+local deadmines
+for _, p in ipairs(world.pins) do
+    if p:IsShown() and p.instances[1][1] == 36 then deadmines = p end
+end
+check(deadmines ~= nil, "Deadmines has a pin on Eastern Kingdoms")
+deadmines.scripts.OnClick(deadmines)
+check(not world:IsShown() and NoobsForeverDungeonMapperFrame:IsShown() and ns.ViewedInstance() == 36, "clicking an entrance opens that dungeon")
+ns.HideMap()
+ns.ShowWorldMap(947)
+check(world.title:GetText() == "Azeroth", "the world map shows")
+SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("world")
+check(not world:IsShown(), "/fd world toggles it")
+ns.ShowWorldMap()
+check(world.title:GetText() ~= nil, "it opens on a map by itself")
+NoobsForeverDungeonMapper_Binding("world")
+check(not world:IsShown(), "the world map key binding toggles it")
 
 realPrint("Unknown instance prints a note")
 printed = {}

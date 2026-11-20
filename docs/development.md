@@ -30,6 +30,19 @@ sudo apt install -y lua5.1 python3-pil gh
    return values. When the addon starts using a new Blizzard API, add it to `WOW_API` in the lint.
 3. Test in game. The harness uses a stub, so it can't tell whether pins line up or a frame looks right.
 
+## The world map data
+
+`NoobsForeverDungeonMapper/Data/WorldMaps.lua` is generated: the continents' art comes from the Forever
+client's own tables, and the entrances from OpenMap's `Places.lua` (`tools/map-world/places.lua`).
+
+```bash
+~/.venvs/fd/bin/python -P tools/map-world/build.py                                   # regenerate
+~/.venvs/fd/bin/python -P tools/map-world/build.py --preview /tmp/fd-preview --wow "<World of Warcraft folder>"
+```
+
+The second form also renders each map with its pins as PNGs, to check that the pins land in the right
+places before you ship them.
+
 ## Finding out what the game allows (the probe)
 
 Inside a dungeon, run these once and then play normally:

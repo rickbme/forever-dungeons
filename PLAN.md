@@ -113,3 +113,15 @@ This is the riskiest gap: the addon has never run in the live game.
   dungeons, so: built the in-game placer (`BossPlacer.lua`, Options > "Help map the bosses") and
   "Share my boss pins". Pins players send go into `Data/BossPlaces.lua`, which beats every other source.
 - Cursor-to-map conversion in the placer is untested offline; check it in game first.
+
+## Status 2026-11-19 (world map)
+
+- `WorldMap.lua` + generated `Data/WorldMaps.lua` (`tools/map-world/build.py`): Azeroth, Eastern Kingdoms and
+  Kalimdor from the Forever client's own continent art (12 tiles each, drawn by FileDataID), with all 29
+  dungeon entrances (OpenMap's `Places.lua`, new dungeons converted from zone maps). Pins checked against
+  rendered previews. Reached from the dungeon window, the minimap menu, Options, `/fd world` and a key binding.
+- Not yet: zone maps (zoom into a zone), your own position on the continent while outdoors
+  (`C_Map.GetPlayerMapPosition` works outside instances), entrances for raids (MC, BWL, ZG, AQ) as we have no raid data.
+- Risk to check: OpenMap found some non-English clients draw the game's dungeon map tiles as solid green
+  squares (their `Data/Forever/Tiles.lua` copies the tiles into the addon instead). Our dungeon maps from the
+  client may hit this on those languages; the continent tiles could too. Tell us if players report it.
