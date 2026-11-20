@@ -30,6 +30,17 @@ sudo apt install -y lua5.1 python3-pil gh
    return values. When the addon starts using a new Blizzard API, add it to `WOW_API` in the lint.
 3. Test in game. The harness uses a stub, so it can't tell whether pins line up or a frame looks right.
 
+## Finding out what the game allows (the probe)
+
+Inside a dungeon, run these once and then play normally:
+
+- `/fd probe` prints what `C_Map.GetPlayerMapPosition`, `UnitPosition`, `GetPlayerFacing` and the
+  zone-text functions return (nil, a number, or a secret value) and says whether any position API works.
+- `/fd probe log` records every sub-zone change, with whether a position API answered.
+- The results are saved in `ForeverDungeonsDB.probe` and `ForeverDungeonsDB.seen` (every sub-zone name you
+  entered, per dungeon). After logging out, read them from
+  `WTF/Account/<account>/SavedVariables/ForeverDungeons.lua`, and use them to fill in `Data/Anchors.lua`.
+
 ## Releasing
 
 1. Bump `## Version:` in `ForeverDungeons/ForeverDungeons.toc` and commit.

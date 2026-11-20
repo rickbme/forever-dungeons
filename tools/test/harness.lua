@@ -85,6 +85,14 @@ function GetInstanceInfo()
     return game.instanceName or "Azeroth", game.instanceType, 1, "Normal", 5, 0, false, game.instanceID
 end
 function GetSubZoneText() return game.subzone end
+function GetZoneText() return game.instanceName or "Azeroth" end
+function GetRealZoneText() return game.instanceName or "Azeroth" end
+function GetMinimapZoneText() return game.subzone end
+function IsIndoors() return true end
+function GetUnitSpeed() return 0, 7, 7, 4.7 end
+function UnitPosition() return nil end
+function GetPlayerFacing() return nil end
+C_Map = { GetBestMapForUnit = function() return nil end }
 function InCombatLockdown() return game.combat end
 local cursor = { 0, 0 }
 function GetCursorPosition() return cursor[1], cursor[2] end
@@ -100,7 +108,7 @@ end
 -- Load the addon like the client does: each file gets (addonName, namespace)
 -------------------------------------------------------------------------------
 local ns = {}
-for _, file in ipairs({ "Data/Dungeons.lua", "Data/DungeonDrawn.lua", "Data/DungeonMinimap.lua", "Data/Merge.lua", "Core.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua" }) do
+for _, file in ipairs({ "Data/Dungeons.lua", "Data/DungeonDrawn.lua", "Data/DungeonMinimap.lua", "Data/Merge.lua", "Data/Anchors.lua", "Core.lua", "Probe.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua" }) do
     local chunk = assert(loadfile("ForeverDungeons/" .. file))
     chunk(ADDON, ns)
 end
@@ -234,6 +242,40 @@ ns.ShowDungeon(3065)
 check(not ForeverDungeonsFrame.noArt:IsShown(), "no no-art message")
 check(ForeverDungeonsFrame.tiles[1]:IsShown(), "tiles drawn")
 check(ForeverDungeonsFrame.credit:GetText():find("Santiago Reyes", 1, true), "artist is credited on the map")
+
+
+realPrint("You-are-here marker follows the sub-zone")
+game.inInstance, game.instanceType, game.instanceID, game.instanceName = true, "party", 3065, "The Hall of Thanes"
+game.subzone = "Dark Iron Ingress"
+Fire("PLAYER_ENTERING_WORLD")
+local here = ForeverDungeonsFrame.here
+check(here:IsShown(), "marker shows in a known area")
+check(here.anchor and here.anchor.sub == "Dark Iron Ingress", "marker uses that area's anchor")
+game.subzone = "Somewhere Unlisted"
+Fire("ZONE_CHANGED_INDOORS")
+check(not here:IsShown(), "marker hides in an area with no anchor")
+check(ns.db.seen[3065]["Somewhere Unlisted"] == 1, "the new sub-zone name is recorded")
+
+realPrint("Probe")
+printed = {}
+SlashCmdList.FOREVERDUNGEONS("probe")
+local joined = table.concat(printed, "\n")
+check(joined:find("UnitPosition = nil", 1, true), "probe reports a blocked API as nil")
+check(joined:find("only sub-zone anchors", 1, true), "probe says no position API answered")
+check(ns.db.probe.last and ns.db.probe.last.anyPosition == false, "probe result is saved")
+SlashCmdList.FOREVERDUNGEONS("probe log")
+game.subzone = "Anvilmar's Rest"
+Fire("ZONE_CHANGED_INDOORS")
+check(#ns.db.probe.log == 1 and ns.db.probe.log[1].sub == "Anvilmar's Rest", "probe log records a sub-zone change")
+UnitPosition = function() return 10, 20, 30, 40 end
+game.subzone = "Reliquary of Kings"
+Fire("ZONE_CHANGED_INDOORS")
+check(ns.db.probe.log[2].anyPosition == true, "probe log notices when a position API answers")
+UnitPosition = function() return nil end
+SlashCmdList.FOREVERDUNGEONS("probe clear")
+check(ns.db.probe == nil, "probe clear forgets results")
+game.inInstance, game.instanceType, game.instanceID, game.instanceName, game.subzone = false, "none", nil, nil, ""
+Fire("PLAYER_ENTERING_WORLD")
 
 realPrint("Unknown instance prints a note")
 printed = {}

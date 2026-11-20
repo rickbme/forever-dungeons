@@ -167,6 +167,25 @@ local function Create()
     f.credit = f.canvas:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     f.credit:SetPoint("BOTTOMRIGHT", -8, 6)
     f.credit:SetTextColor(1, 0.82, 0)
+    -- "You are here": the inside of a dungeon hides coordinates, so this marks the area (Data/Anchors.lua)
+    f.here = CreateFrame("Button", nil, f.canvas)
+    f.here:SetSize(30, 30)
+    f.here:SetFrameLevel(f.canvas:GetFrameLevel() + 8)
+    f.here.ring = CircleTexture(f.here, "ARTWORK", 30)
+    f.here.ring:SetPoint("CENTER")
+    f.here.ring:SetVertexColor(0.2, 0.6, 1, 0.45)
+    f.here.dot = CircleTexture(f.here, "OVERLAY", 10)
+    f.here.dot:SetPoint("CENTER")
+    f.here.dot:SetVertexColor(0.3, 0.75, 1, 1)
+    f.here:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText("You are in this area")
+        if self.anchor then GameTooltip:AddLine(self.anchor.sub, 1, 1, 1) end
+        GameTooltip:AddLine("Approximate: the game hides your exact position here.", 0.6, 0.6, 0.6, true)
+        GameTooltip:Show()
+    end)
+    f.here:SetScript("OnLeave", GameTooltip_Hide)
+    f.here:Hide()
     f.noArt = f.canvas:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     f.noArt:SetPoint("CENTER")
     f.noArt:SetWidth(MAP_W - 80)
@@ -334,6 +353,22 @@ function ns.Refresh()
     DrawPins(d)
     DrawList(d)
     ns.UpdateLocationText()
+    ns.UpdateYouAreHere()
+end
+
+-- Puts the "you are here" marker on the anchor for the player's current sub-zone, if it is on this floor.
+function ns.UpdateYouAreHere()
+    if not (f and f.here) then return end
+    f.here:Hide()
+    if not (f:IsShown() and view.instanceID and view.floor) then return end
+    if ns.CurrentInstance() ~= view.instanceID then return end
+    local a = ns.CurrentAnchor(view.instanceID)
+    if a and (a.floor or 1) == view.floor then
+        f.here.anchor = a
+        f.here:ClearAllPoints()
+        f.here:SetPoint("CENTER", f.canvas, "TOPLEFT", a.x * MAP_W, -a.y * MAP_H)
+        f.here:Show()
+    end
 end
 
 -- The "where am I" line: the named area from the game, plus the next boss.

@@ -19,6 +19,7 @@ ns.DEFAULTS = {
     minimapAngle = 200,   -- its position around the minimap, in degrees
     floors = {},          -- [instanceID] = last floor viewed
     runs = {},            -- [instanceID] = { killed = { [key] = true }, last = time() }
+    seen = {},            -- [instanceID] = { [sub-zone name] = times entered }, for writing anchors
 }
 
 -- A run is forgotten after this long without entering or killing anything in it.
@@ -121,11 +122,23 @@ end
 -- Floor choice
 -------------------------------------------------------------------------------
 
+-- The anchor (Data/Anchors.lua) for the sub-zone the player stands in, if there is one.
+function ns.CurrentAnchor(instanceID)
+    local list = ns.Anchors and ns.Anchors[instanceID]
+    local sub = ns.Norm(GetSubZoneText())
+    if not (list and sub and sub ~= "") then return nil end
+    for _, a in ipairs(list) do
+        if ns.Norm(a.sub) == sub then return a end
+    end
+end
+
 -- The floor whose name matches the area the player stands in, if any.
 function ns.FloorForSubzone(instanceID)
     local d = ns.Dungeons[instanceID]
     local sub = ns.Norm(GetSubZoneText())
     if not (d and sub and sub ~= "") then return nil end
+    local a = ns.CurrentAnchor(instanceID)
+    if a then return a.floor or 1 end
     for i, f in ipairs(d.floors) do
         if ns.Norm(f.name) == sub then return i end
         for _, name in ipairs(f.subzones or {}) do
@@ -189,7 +202,9 @@ end
 
 local function OnZoneChanged()
     if not inDungeon then return end
+    ns.RecordSubzone(inDungeon)
     ns.UpdateLocationText()
+    ns.UpdateYouAreHere()
     local f = ns.FloorForSubzone(inDungeon)
     if f then ns.ShowFloorIfViewing(inDungeon, f) end
 end
@@ -287,6 +302,7 @@ local HELP = {
     "/fd live - toggle the enlarged minimap inside dungeons",
     "/fd button - show or hide the minimap button",
     "/fd scale <0.5-2> - map window size",
+    "/fd probe [log|clear] - check what position data the game gives addons in a dungeon",
 }
 
 SLASH_FOREVERDUNGEONS1 = "/fd"
@@ -313,6 +329,8 @@ SlashCmdList.FOREVERDUNGEONS = function(msg)
         ns.LiveView_Toggle()
     elseif cmd == "button" then
         ns.MinimapButton_Toggle()
+    elseif cmd == "probe" then
+        ns.Probe(arg)
     elseif cmd == "scale" and tonumber(arg) then
         ns.db.scale = math.min(2, math.max(0.5, tonumber(arg)))
         ns.ApplyScale()

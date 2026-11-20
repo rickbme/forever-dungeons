@@ -86,3 +86,13 @@ This is the riskiest gap: the addon has never run in the live game.
 - Next: boss pins on the new maps (hand-placed, maybe via an editor like OpenMap's), pins for the remade
   classic dungeons from OpenMap's `DungeonBosses.lua`, then in-game testing, then the world map (Phase 3).
 - Not included yet: his sea chart and gap paintings (need his OK for the world map), OpenMap's world map code.
+
+## Status 2026-11-19 (later still): location anchors
+
+- Idea: since coordinates are hidden in instances, mark where you are by sub-zone ("you are here" marker
+  from `Data/Anchors.lua`), plus manual placement and an in-game placer later.
+- Built: `/fd probe` (`Probe.lua`) to test the game's position APIs in a live dungeon; sub-zone names
+  you enter are always recorded in `ForeverDungeonsDB.seen`; the marker moves with the sub-zone and
+  turns the map to that anchor's floor. Only The Hall of Thanes has anchors so far, and its three names
+  are read from Reyes' map labels, not confirmed in game.
+- Next: run the probe in game, fill `Data/Anchors.lua` from `seen`, then click-to-place "I'm here".

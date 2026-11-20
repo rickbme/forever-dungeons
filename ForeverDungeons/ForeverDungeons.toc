@@ -16,7 +16,9 @@ Data\Dungeons.lua
 Data\DungeonDrawn.lua
 Data\DungeonMinimap.lua
 Data\Merge.lua
+Data\Anchors.lua
 Core.lua
+Probe.lua
 MapFrame.lua
 LiveView.lua
 MinimapButton.lua
