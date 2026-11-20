@@ -14,7 +14,7 @@ Work in progress (beta): it has not been tested in the live game yet.
 - **Maps for Forever's new dungeons**, drawn by [Santiago Reyes](https://sreyesmaps.com) (Atlas de Azeroth:
   Forever) and used with his permission, with his watermark and credit kept on the map. Dungeons without
   one use floors built from the game's own minimap pictures where the client has them.
-- **Boss pins and progress**: 108 bosses have pins on the map. Every boss is in the list beside it,
+- **Boss pins and progress**: 118 of the 242 bosses have pins on the map so far, and you can help place the rest (see below). Every boss is in the list beside it,
   in the game's order. Kills are picked up from the game's encounter events. The next boss pulses
   gold, killed bosses turn grey, and right-clicking a boss toggles it by hand.
 - **Floor following**: the map turns to the floor named after the area you walk into, to the
@@ -78,8 +78,15 @@ in combat. Your normal size comes back when you leave the dungeon. Turn it on wi
 | Map by Santiago Reyes, boss list without pins | The Hall of Thanes, Ruins of Lordaeron, Excavation Site: Wetlands, City of Dalaran (and The Underbelly), The Drowned City, Krol'dok Stronghold, Blackmaw Hold, The Shaper's Terrace |
 | Boss list only (no map yet) | Alcaz Prison |
 
-The missing pins are dungeons whose only public boss positions belong to their later
-Cataclysm/Mists remakes, which have different layouts.
+Pins are missing for bosses nobody has mapped yet, mostly in the remade dungeons (Ragefire Chasm, Stockade,
+Scarlet Monastery, Scholomance and others) and in the new ones. Their only public positions belong to later
+remakes with different layouts, so we place them by hand instead.
+
+### Help map the bosses
+
+Options > *Help map the bosses*: click a boss in the map's list, then click where it is on the map. Your pin
+appears at once and is saved. *Share my boss pins* shows your pins as text to copy and send to us (for example
+in the Noobs Forever Discord), and we add them for everyone.
 
 ## How the data is made
 

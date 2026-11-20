@@ -19,6 +19,8 @@ ns.DEFAULTS = {
     minimapAngle = 200,   -- its position around the minimap, in degrees
     floors = {},          -- [instanceID] = last floor viewed
     runs = {},            -- [instanceID] = { killed = { [key] = true }, last = time() }
+    placer = false,       -- mapmaker mode: click a boss, then the map, to place its pin
+    bossPlaces = {},      -- [instanceID] = { [boss name] = { floor, x, y } } placed by this player
     welcomed = false,     -- the first-run popup has been shown
     seen = {},            -- [instanceID] = { [sub-zone name] = times entered }, for writing anchors
 }
@@ -267,6 +269,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
         self:UnregisterEvent("ADDON_LOADED")
         ns.MinimapButton_Update()
         ns.Options_Init()
+        ns.ApplyBossPlaces()
         for _, e in ipairs({ "PLAYER_ENTERING_WORLD", "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED",
             "ZONE_CHANGED_INDOORS", "ENCOUNTER_START", "ENCOUNTER_END", "BOSS_KILL",
             "CHAT_MSG_SYSTEM", "PLAYER_REGEN_ENABLED" }) do

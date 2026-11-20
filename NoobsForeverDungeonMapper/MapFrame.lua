@@ -22,6 +22,7 @@ local f -- the window
 local view = { instanceID = nil, floor = nil }
 local fighting -- boss being fought, if any
 local pins, rows = {}, {}
+local placing -- index of the boss whose pin is being placed (mapmaker mode)
 
 -------------------------------------------------------------------------------
 -- Construction
@@ -106,6 +107,8 @@ local function CreateRow(i)
     r:SetScript("OnClick", function(self, button)
         if button == "RightButton" then
             ns.SetKilled(view.instanceID, self.boss, not ns.IsKilled(view.instanceID, self.boss))
+        elseif ns.db.placer and view.floor then
+            ns.StartPlacing(self.index)
         elseif self.boss.floor then
             ns.ShowDungeon(view.instanceID, self.boss.floor)
             local p = pins[self.index]
@@ -153,6 +156,15 @@ local function Create()
     f.canvas:SetSize(MAP_W, MAP_H)
     f.canvas:SetPoint("TOPLEFT", PAD, -PAD - 30)
     f.canvas:SetClipsChildren(true)
+    f.canvas:SetScript("OnMouseUp", function(self, button)
+        if not placing then return end
+        if button == "RightButton" then return ns.CancelPlacing() end
+        local scale = self:GetEffectiveScale()
+        local cx, cy = GetCursorPosition()
+        local left, top = self:GetLeft(), self:GetTop()
+        if not (scale and left and top) then return end
+        ns.PlaceAt((cx / scale - left) / MAP_W, (top - cy / scale) / MAP_H)
+    end)
     f.canvas:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8" })
     f.canvas:SetBackdropColor(0, 0, 0, 0.6)
     f.tiles = {}
@@ -164,6 +176,21 @@ local function Create()
             f.tiles[#f.tiles + 1] = t
         end
     end
+    f.placeStatus = f.canvas:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    f.placeStatus:SetPoint("TOP", 0, -8)
+    f.placeStatus:SetWidth(MAP_W - 40)
+    f.placeStatus:SetTextColor(0.3, 0.85, 1)
+    f.placeStatus:Hide()
+    f.placeRemove = SmallButton(f.canvas, "Remove my pin", 110)
+    f.placeRemove:SetPoint("TOP", f.placeStatus, "BOTTOM", 0, -4)
+    f.placeRemove:SetFrameLevel(f.canvas:GetFrameLevel() + 10)
+    f.placeRemove:SetScript("OnClick", function()
+        local d = view.instanceID and ns.Dungeons[view.instanceID]
+        local b = d and placing and d.bosses[placing]
+        if b then ns.ClearBossPlace(view.instanceID, b) end
+        ns.CancelPlacing()
+    end)
+    f.placeRemove:Hide()
     f.credit = f.canvas:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     f.credit:SetPoint("BOTTOMRIGHT", -8, 6)
     f.credit:SetTextColor(1, 0.82, 0)
@@ -217,6 +244,7 @@ local function Create()
     f.listHint:SetWidth(LIST_W)
     f.listHint:SetJustifyH("LEFT")
     f.listHint:SetText("Click: show on map. Right-click: mark killed.")
+    f.listHintDefault = "Click: show on map. Right-click: mark killed."
 
     -- Buttons along the bottom right
     f.reset = SmallButton(f, "Reset", 70)
@@ -323,6 +351,8 @@ local function DrawList(d)
                 or (b == nextBoss and "ffffd100") or "ffffffff"
             local where = ""
             if b.floor and b.floor ~= view.floor and #d.floors > 1 then where = " |cff808080(other floor)|r" end
+            if ns.db.placer and not b.x then where = where .. " |cff40d0ff(no pin yet)|r" end
+            if ns.db.placer and placing == i then color = "ff40d0ff" end
             r.text:SetText(("|c%s%d. %s|r%s"):format(color, i, b.name, where))
             r.check:SetShown(killed)
             r:Show()
@@ -364,6 +394,50 @@ function ns.Refresh()
     DrawList(d)
     ns.UpdateLocationText()
     ns.UpdateYouAreHere()
+    ns.UpdatePlacerUI()
+end
+
+-------------------------------------------------------------------------------
+-- Mapmaker mode: place a boss's pin (Options > "Help map the bosses")
+-------------------------------------------------------------------------------
+
+function ns.UpdatePlacerUI()
+    if not f then return end
+    local d = view.instanceID and ns.Dungeons[view.instanceID]
+    local boss = d and placing and d.bosses[placing]
+    f.canvas:EnableMouse(boss ~= nil)
+    if boss then
+        f.placeStatus:SetText(("Placing %s: click the map where it is. Right-click the map to cancel."):format(boss.name))
+        f.placeStatus:Show()
+        f.placeRemove:SetShown(ns.HasBossPlace(view.instanceID, boss))
+    else
+        f.placeStatus:Hide()
+        f.placeRemove:Hide()
+    end
+    f.listHint:SetText(ns.db.placer and "Mapmaker mode: click a boss, then click the map. Right-click a boss: mark killed."
+        or f.listHintDefault)
+end
+
+function ns.StartPlacing(index)
+    if not (ns.db.placer and view.instanceID and view.floor) then return end
+    placing = index
+    ns.Refresh()
+end
+
+function ns.CancelPlacing()
+    placing = nil
+    ns.Refresh()
+end
+
+-- x and y: where the player clicked, as fractions of the map picture.
+function ns.PlaceAt(x, y)
+    local d = view.instanceID and ns.Dungeons[view.instanceID]
+    local boss = d and placing and d.bosses[placing]
+    if not (boss and view.floor) or x < 0 or x > 1 or y < 0 or y > 1 then return end
+    ns.SetBossPlace(view.instanceID, boss, view.floor, x, y)
+    ns.Print(("%s: pin placed. Thank you! Use \"Share my boss pins\" in the options to send it in."):format(boss.name))
+    placing = nil
+    ns.Refresh()
 end
 
 -- Puts the "you are here" marker on the anchor for the player's current sub-zone, if it is on this floor.

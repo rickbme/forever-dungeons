@@ -20,3 +20,23 @@ for id, d in pairs(ns.Dungeons) do
         if drawn then Add(d, drawn, false) elseif built then Add(d, built, true) end
     end
 end
+
+-- Boss pins. Order of preference: placed by hand (Data/BossPlaces.lua), then OpenMap's
+-- (Data/DungeonBosses.lua; its tables only apply where the floor order matches ours), then none.
+local function key(name) return (name:lower():gsub("[^%w]", "")) end
+local DIFFERENT_FLOORS = { [229] = true, [429] = true } -- Blackrock Spire, Dire Maul
+
+local function Pin(b, p)
+    if p and not b.x and p[1] and p[2] and p[3] then b.floor, b.x, b.y = p[1], p[2], p[3] end
+end
+
+for id, d in pairs(ns.Dungeons) do
+    local placed = ns.BossPlaces and ns.BossPlaces[id] or {}
+    local theirs = (ns.MapDungeonBosses and not DIFFERENT_FLOORS[id]) and ns.MapDungeonBosses[id] or {}
+    local byKey = {}
+    for name, p in pairs(placed) do byKey[key(name)] = p end
+    for _, b in ipairs(d.bosses) do Pin(b, byKey[key(b.name)]) end
+    byKey = {}
+    for name, p in pairs(theirs) do byKey[key(name)] = p end
+    for _, b in ipairs(d.bosses) do Pin(b, byKey[key(b.name)]) end
+end

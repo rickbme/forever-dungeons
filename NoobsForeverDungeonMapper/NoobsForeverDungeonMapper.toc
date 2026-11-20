@@ -15,10 +15,13 @@
 Data\Dungeons.lua
 Data\DungeonDrawn.lua
 Data\DungeonMinimap.lua
+Data\DungeonBosses.lua
+Data\BossPlaces.lua
 Data\Merge.lua
 Data\Anchors.lua
 Core.lua
 Probe.lua
+BossPlacer.lua
 MapFrame.lua
 LiveView.lua
 MinimapButton.lua

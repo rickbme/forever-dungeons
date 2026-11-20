@@ -108,7 +108,7 @@ end
 -- Load the addon like the client does: each file gets (addonName, namespace)
 -------------------------------------------------------------------------------
 local ns = {}
-for _, file in ipairs({ "Data/Dungeons.lua", "Data/DungeonDrawn.lua", "Data/DungeonMinimap.lua", "Data/Merge.lua", "Data/Anchors.lua", "Core.lua", "Probe.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua", "Options.lua" }) do
+for _, file in ipairs({ "Data/Dungeons.lua", "Data/DungeonDrawn.lua", "Data/DungeonMinimap.lua", "Data/DungeonBosses.lua", "Data/BossPlaces.lua", "Data/Merge.lua", "Data/Anchors.lua", "Core.lua", "Probe.lua", "BossPlacer.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua", "Options.lua" }) do
     local chunk = assert(loadfile("NoobsForeverDungeonMapper/" .. file))
     chunk(ADDON, ns)
 end
@@ -308,6 +308,33 @@ ns.db.welcomed = false
 Fire("PLAYER_ENTERING_WORLD")
 check(NoobsForeverDungeonMapperWelcome:IsShown(), "welcome shows when it was never dismissed")
 NoobsForeverDungeonMapperWelcome:Hide()
+
+realPrint("Boss pins from OpenMap and the placer")
+local pinned = 0
+for _, b in ipairs(ns.Dungeons[36].bosses) do if b.x then pinned = pinned + 1 end end
+check(pinned == 7, "Deadmines got 7 pins from OpenMap's data")
+ns.db.placer = true
+ns.ShowDungeon(389, 1)
+local rfc = ns.Dungeons[389]
+local oggle = rfc.bosses[1]
+check(oggle.x == nil, "Ragefire Chasm's first boss starts without a pin")
+ns.StartPlacing(1)
+check(NoobsForeverDungeonMapperFrame.placeStatus:IsShown(), "placing shows instructions")
+ns.PlaceAt(1.5, 0.2)
+check(oggle.x == nil, "a click outside the map is ignored")
+ns.PlaceAt(0.25, 0.4)
+check(oggle.x == 0.25 and oggle.y == 0.4 and oggle.floor == 1, "the pin is placed where it was clicked")
+check(ns.HasBossPlace(389, oggle), "the placed pin is saved")
+local lines = ns.ExportBossPlaces()
+check(#lines == 1 and lines[1]:find("389|Ragefire Chasm|" .. oggle.name .. "|1|0.2500|0.4000", 1, true), "the export line is right")
+oggle.floor, oggle.x, oggle.y, oggle.original = nil, nil, nil, nil
+ns.ApplyBossPlaces()
+check(oggle.x == 0.25, "placed pins come back after a reload")
+ns.ClearBossPlace(389, oggle)
+check(oggle.x == nil and not ns.HasBossPlace(389, oggle), "removing a placed pin restores the original")
+ns.db.placer = false
+ns.CancelPlacing()
+ns.HideMap()
 
 realPrint("Unknown instance prints a note")
 printed = {}

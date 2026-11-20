@@ -39,6 +39,9 @@ local SETTINGS = {
 }
 
 local TESTER_SETTINGS = {
+    { label = "Help map the bosses (place pins on the map)",
+      tip = "Click a boss in the map's list, then click where it is on the map. Great for bosses that have no pin yet.",
+      get = DB("placer", false), set = function(v) ns.db.placer = v; ns.CancelPlacing(); ns.Refresh() end },
     { label = "Record the area names I walk through",
       tip = "Helps the mapmakers add \"you are here\" areas. Saved in your game files; nothing is sent anywhere.",
       get = DB("probeLog", false), set = function(v) ns.db.probeLog = v end },
@@ -112,7 +115,7 @@ end
 
 local function CreateOptions()
     opt = CreateFrame("Frame", "NoobsForeverDungeonMapperOptions", UIParent, "BackdropTemplate")
-    opt:SetSize(WIDTH, 500)
+    opt:SetSize(WIDTH, 570)
     opt:SetPoint("CENTER")
     opt:SetFrameStrata("DIALOG")
     opt:SetToplevel(true)
@@ -194,6 +197,11 @@ local function CreateOptions()
         Check(opt, def, 16, y)
         y = y - 30
     end
+    opt.share = Button(opt, "Share my boss pins", 330)
+    opt.share:SetPoint("TOPLEFT", 20, y)
+    opt.share:SetScript("OnClick", function() ns.ShowShareWindow() end)
+    Tip(opt.share, "Shows the pins you placed as text you can copy and send to the mapmakers.")
+    y = y - 32
     opt.probe = Button(opt, "Check what the game tells addons", 330)
     opt.probe:SetPoint("TOPLEFT", 20, y)
     opt.probe:SetScript("OnClick", function() ns.Probe("") end)

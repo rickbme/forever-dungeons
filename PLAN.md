@@ -104,3 +104,12 @@ This is the riskiest gap: the addon has never run in the live game.
   button; the minimap right-click menu has Options and Welcome tips. Every slash command now has a button.
 - Checkboxes are drawn from classic textures (no Blizzard templates), so they can't break loading. All of
   this is untested in the live client: check the look and the AddOns-list entry first.
+
+## Status 2026-11-19 (boss pins)
+
+- Imported OpenMap's boss pins (MIT, `Data/DungeonBosses.lua`): Deadmines, Stratholme, Razorfen Kraul and
+  Onyxia gained pins (108 -> 118 of 242). Floor layouts match ours except Blackrock Spire and Dire Maul (skipped).
+- OpenMap has no pins for Ragefire Chasm, Stockade, Scarlet Monastery, Scholomance, ZF, BFD, SFK and the new
+  dungeons, so: built the in-game placer (`BossPlacer.lua`, Options > "Help map the bosses") and
+  "Share my boss pins". Pins players send go into `Data/BossPlaces.lua`, which beats every other source.
+- Cursor-to-map conversion in the placer is untested offline; check it in game first.
