@@ -1,0 +1,10 @@
+{
+  "Lua.runtime.version": "Lua 5.1",
+  "Lua.workspace.library": [],
+  "Lua.workspace.checkThirdParty": false,
+  "Lua.diagnostics.disable": ["undefined-global", "undefined-field", "need-check-nil", "duplicate-set-field"],
+  "Lua.telemetry.enable": false,
+  "files.associations": { "*.toc": "ini" },
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true
+}
