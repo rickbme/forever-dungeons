@@ -51,8 +51,25 @@ in combat. Your normal size comes back when you leave the dungeon. Turn it on wi
 
 ## Install
 
-**Players:** download the addon zip from the
-[Releases page](https://github.com/rickbme/noobs-forever-dungeon-mapper/releases) (the file named
+**Players (Windows, easiest):** on the
+[Releases page](https://github.com/rickbme/noobs-forever-dungeon-mapper/releases), download
+`NoobsForeverDungeonMapper-Setup-<version>.exe` under *Assets* and run it.
+
+1. Windows may say *"Windows protected your PC"*, because the installer isn't signed (signing costs money,
+   and we're still in beta). Click **More info**, then **Run anyway**. Some antivirus programs are wary of
+   new installers too; if yours blocks it, use the zip below instead.
+2. Windows asks whether to allow changes: click **Yes**. The game is usually under *Program Files*, which
+   needs that permission.
+3. The installer finds your World of Warcraft folder (the one that holds `_forever_`). If it picked the
+   wrong one, click **Browse**. It replaces any older copy of the addon, and keeps your settings and boss
+   progress.
+4. Close the game if it's running, then start it and make sure *Noobs Forever Dungeon Mapper* is ticked in
+   the AddOns list at the character screen.
+
+To remove it: Windows Settings > Apps > *Noobs Forever Dungeon Mapper* > Uninstall. That removes only the
+addon folder.
+
+**Players (by hand, any system):** download the addon zip from the same page (the file named
 `NoobsForeverDungeonMapper-<version>.zip` under *Assets*). It contains only the addon and a short
 `HOW-TO-INSTALL.txt`, nothing else.
 
@@ -66,7 +83,8 @@ in combat. Your normal size comes back when you leave the dungeon. Turn it on wi
    character screen. A full restart is needed the first time: it comes with new picture files.
 
 **Developers:** clone the repository; the addon folder is `NoobsForeverDungeonMapper/`. Build the same zip
-with `python3 -P tools/package.py v<version>`.
+with `python3 -P tools/package.py v<version>`, and the installer with Inno Setup (see
+[docs/development.md](docs/development.md)).
 
 ## Commands
 

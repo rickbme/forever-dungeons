@@ -11,7 +11,8 @@ dungeon's map when you enter a dungeon, with a floor picker, boss pins, a boss l
 no slash commands are needed (`/fd` still works as a shortcut).
 
 - Repo: https://github.com/rickbme/noobs-forever-dungeon-mapper (only branch: `main`)
-- Version: `0.1.0-beta` (in the `.toc`). **No release has been published yet.**
+- Version: `0.1.0-beta` (in the `.toc`). Published as a GitHub pre-release with the addon zip only; the
+  Windows installer (`installer/`) came after it, so that release doesn't have the `.exe` yet.
 - Modelled on [OpenMap](https://github.com/openmap-world/openmap) (MIT); see [CREDITS.md](CREDITS.md).
 - Maps of the new dungeons are by Santiago Reyes, used under his announcement's terms (non-commercial, keep
   watermark and credit). A thank-you and permission request was written; it may or may not have been sent.
@@ -28,6 +29,7 @@ no slash commands are needed (`/fd` still works as a shortcut).
 | `/fd probe` and sub-zone recording | **Not checked: its results are needed** |
 | Boss pin placer + "Share my boss pins" | **Not checked, click-to-map conversion untested** |
 | World map (Azeroth, both continents) with entrances | **Not checked** |
+| Windows installer: built on Windows; silent install, upgrade, refusing a folder without `_forever_`, uninstall, finding the game and seeing `Wow.exe` all tested against a fake game folder | **Not checked**: the wizard pages by eye, a real install, the addon loading afterwards, and the release job in CI |
 
 Follow [docs/in-game-checklist.md](docs/in-game-checklist.md) for the in-game pass.
 
@@ -51,6 +53,7 @@ Follow [docs/in-game-checklist.md](docs/in-game-checklist.md) for the in-game pa
 | `Media/Textures/` | tiles cut from the client (minimap-built maps) and Reyes' maps (35 MB of TGA) |
 | `tools/test/harness.lua`, `tools/test/lint.py` | offline tests against a stubbed WoW API; static checks |
 | `tools/package.py` | builds the addon-only zip for players (`dist/`) |
+| `installer/NoobsForeverDungeonMapper.iss` | Inno Setup script for the Windows installer (`dist\...-Setup-<version>.exe`); see docs/development.md |
 | `tools/casc/casc.py` | reads files by ID from a local game install (adapted from OpenMap) |
 
 ## Commands
@@ -109,7 +112,9 @@ files, the game install. See [docs/development.md](docs/development.md).
 1. **In-game pass** with [docs/in-game-checklist.md](docs/in-game-checklist.md); fix what breaks and add each bug to
    the harness. Send back the saved-variables file after running `/fd probe log` in a dungeon.
 2. **Publish the beta** (needs the maintainer's go-ahead): bump the version if wanted, tag, push the tag; the
-   `release` workflow builds `NoobsForeverDungeonMapper-<tag>.zip`, the addon-only download.
+   `release` workflow builds `NoobsForeverDungeonMapper-<tag>.zip`, the addon-only download, and
+   `NoobsForeverDungeonMapper-Setup-<version>.exe`, the Windows installer. Before telling the guild, run the
+   installer once on a real install and take a screenshot of the SmartScreen warning for the README.
 3. **Anchors**: fill `Data/Anchors.lua` from the sub-zone names the probe records (only The Hall of Thanes has
    anchors, and its names are unconfirmed).
 4. **Boss pins**: gather players' "Share my boss pins" exports into `Data/BossPlaces.lua`.

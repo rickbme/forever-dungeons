@@ -60,6 +60,45 @@ Inside a dungeon, run these once and then play normally:
 2. With the maintainer's go-ahead, tag it: `git tag v0.1.0-beta && git push origin v0.1.0-beta`.
 3. The `release` workflow checks the tag matches the TOC version, runs the checks, zips
    `NoobsForeverDungeonMapper/` (folder at the zip root) and makes a GitHub release. Tags with `-alpha` or
-   `-beta` are marked pre-release. CurseForge is not automated.
+   `-beta` are marked pre-release. A second job, on Windows, builds the installer and adds it to the same
+   release. CurseForge is not automated.
 
 To build the zip by hand: `python3 -P tools/package.py v0.1.0-beta` (writes `dist/`).
+
+## The Windows installer
+
+`installer/NoobsForeverDungeonMapper.iss` is an [Inno Setup 6](https://jrsoftware.org/isinfo.php) script.
+On Windows (`winget install JRSoftware.InnoSetup --source winget`), from the repo root:
+
+```bat
+iscc installer\NoobsForeverDungeonMapper.iss
+```
+
+This writes `dist\NoobsForeverDungeonMapper-Setup-<version>.exe`, with the version read from the TOC
+(`/DAppVersion=<version>` is accepted but must match it). `iscc` is in Inno Setup's folder, which isn't on
+`PATH` by default.
+
+What it does:
+
+- **Finds the game**: the folder that contains `_forever_`. It tries the Windows uninstall entry for
+  World of Warcraft (`InstallLocation`), Blizzard's `InstallPath` keys, then the usual folders on every
+  fixed drive. Blizzard's records can be stale (a game moved to another drive), so each candidate must
+  really hold `_forever_`. Picking `_forever_`, `_retail_` or `_forever_\Interface\AddOns` by mistake is
+  corrected to the game folder; any other folder without `_forever_` gets a friendly message.
+- **Installs** into `_forever_\Interface\AddOns\NoobsForeverDungeonMapper\`, after deleting the old copy
+  and the legacy `ForeverDungeons` folder. It never touches `WTF\`.
+- **Warns if `Wow.exe` is running** (the game only loads addons at start-up), with *check again* or
+  *install anyway*.
+- **Uninstalls** only the addon folder. The uninstaller itself lives in ProgramData, not the game folder.
+- Asks for admin, because the game is usually under Program Files. `/CURRENTUSER` skips that, for testing.
+- Keep `AppId` as it is: Windows recognises upgrades and the uninstaller by it.
+
+To test without touching a real install, make a fake game folder and install into it silently:
+
+```bat
+mkdir "%TEMP%\fake\World of Warcraft\_forever_\Interface\AddOns"
+dist\NoobsForeverDungeonMapper-Setup-0.1.0-beta.exe /VERYSILENT /CURRENTUSER /DIR="%TEMP%\fake\World of Warcraft" /LOG="%TEMP%\fake\setup.log"
+```
+
+The installer isn't signed, so Windows SmartScreen shows "Windows protected your PC" (*More info* >
+*Run anyway*). A code-signing certificate would remove that; not worth it for the beta.
