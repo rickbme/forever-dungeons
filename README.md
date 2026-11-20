@@ -21,6 +21,11 @@ Work in progress (beta): it has not been tested in the live game yet.
   floor of a boss when you pull it, and to the floor of the next boss after a kill.
 - **Live view (optional)**: enlarges the minimap while you are in a dungeon (see below).
 - **Browse anywhere**: `/fd list` (or right-click in the addon compartment) opens any dungeon's map.
+- **No typing needed**: everything has a button. The map window has **Options** and **Dungeons**
+  buttons, the minimap button's right-click menu lists every dungeon plus Options, and a short welcome
+  popup explains the basics the first time you play. There is also an entry in the game's
+  Options > AddOns list and a key binding (Options > Keybindings > AddOns). The slash commands below
+  are optional shortcuts.
 
 ## "You are here"
 
@@ -54,6 +59,8 @@ in combat. Your normal size comes back when you leave the dungeon. Turn it on wi
 |---|---|
 | `/fd` (or `/nfdm`) | show or hide the map (current dungeon, or the last one viewed) |
 | `/fd list` | pick any dungeon to view |
+| `/fd options` | open the options window |
+| `/fd welcome` | show the welcome tips again |
 | `/fd reset` | clear boss kills for the current dungeon (also done automatically when the game resets it) |
 | `/fd auto` | toggle opening the map automatically |
 | `/fd follow` | toggle turning to the next boss's floor after a kill |

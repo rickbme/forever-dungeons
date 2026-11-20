@@ -1,0 +1,5 @@
+<!-- Key bindings: Options > Keybindings > AddOns > Noobs Forever Dungeon Mapper. Names are set in Options.lua. -->
+<Bindings>
+	<Binding name="NOOBSFOREVERDUNGEONMAPPER_TOGGLE" header="NOOBSFOREVERDUNGEONMAPPER" category="ADDONS">NoobsForeverDungeonMapper_Binding("toggle")</Binding>
+	<Binding name="NOOBSFOREVERDUNGEONMAPPER_OPTIONS" category="ADDONS">NoobsForeverDungeonMapper_Binding("options")</Binding>
+</Bindings>

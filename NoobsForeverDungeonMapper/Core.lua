@@ -19,6 +19,7 @@ ns.DEFAULTS = {
     minimapAngle = 200,   -- its position around the minimap, in degrees
     floors = {},          -- [instanceID] = last floor viewed
     runs = {},            -- [instanceID] = { killed = { [key] = true }, last = time() }
+    welcomed = false,     -- the first-run popup has been shown
     seen = {},            -- [instanceID] = { [sub-zone name] = times entered }, for writing anchors
 }
 
@@ -184,6 +185,7 @@ local function NoteUnknownInstance()
 end
 
 local function OnEnterWorld()
+    ns.MaybeShowWelcome()
     local id = ns.CurrentInstance()
     if id ~= inDungeon then
         local left = inDungeon
@@ -264,6 +266,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
         end
         self:UnregisterEvent("ADDON_LOADED")
         ns.MinimapButton_Update()
+        ns.Options_Init()
         for _, e in ipairs({ "PLAYER_ENTERING_WORLD", "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED",
             "ZONE_CHANGED_INDOORS", "ENCOUNTER_START", "ENCOUNTER_END", "BOSS_KILL",
             "CHAT_MSG_SYSTEM", "PLAYER_REGEN_ENABLED" }) do
@@ -295,6 +298,8 @@ end)
 
 local HELP = {
     "/fd - show or hide the map (current dungeon, or the last one viewed)",
+    "/fd options - open the options window (no typing needed: right-click the minimap button, then Options)",
+    "/fd welcome - show the welcome tips again",
     "/fd list - pick any dungeon to view",
     "/fd reset - clear boss kills for the current dungeon",
     "/fd auto - toggle opening the map automatically in dungeons",
@@ -329,12 +334,17 @@ SlashCmdList.NOOBSFOREVERDUNGEONMAPPER = function(msg)
         ns.LiveView_Toggle()
     elseif cmd == "button" then
         ns.MinimapButton_Toggle()
+    elseif cmd == "options" or cmd == "config" or cmd == "settings" then
+        ns.ToggleOptions()
+    elseif cmd == "welcome" or cmd == "help" then
+        ns.ShowWelcome(true)
     elseif cmd == "probe" then
         ns.Probe(arg)
     elseif cmd == "scale" and tonumber(arg) then
         ns.db.scale = math.min(2, math.max(0.5, tonumber(arg)))
         ns.ApplyScale()
     else
+        ns.ShowWelcome(true)
         for _, line in ipairs(HELP) do Print(line) end
     end
 end

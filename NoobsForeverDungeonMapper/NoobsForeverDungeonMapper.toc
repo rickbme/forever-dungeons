@@ -22,3 +22,4 @@ Probe.lua
 MapFrame.lua
 LiveView.lua
 MinimapButton.lua
+Options.lua

@@ -108,7 +108,7 @@ end
 -- Load the addon like the client does: each file gets (addonName, namespace)
 -------------------------------------------------------------------------------
 local ns = {}
-for _, file in ipairs({ "Data/Dungeons.lua", "Data/DungeonDrawn.lua", "Data/DungeonMinimap.lua", "Data/Merge.lua", "Data/Anchors.lua", "Core.lua", "Probe.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua" }) do
+for _, file in ipairs({ "Data/Dungeons.lua", "Data/DungeonDrawn.lua", "Data/DungeonMinimap.lua", "Data/Merge.lua", "Data/Anchors.lua", "Core.lua", "Probe.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua", "Options.lua" }) do
     local chunk = assert(loadfile("NoobsForeverDungeonMapper/" .. file))
     chunk(ADDON, ns)
 end
@@ -276,6 +276,38 @@ SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("probe clear")
 check(ns.db.probe == nil, "probe clear forgets results")
 game.inInstance, game.instanceType, game.instanceID, game.instanceName, game.subzone = false, "none", nil, nil, ""
 Fire("PLAYER_ENTERING_WORLD")
+
+realPrint("Options, welcome popup and key binding")
+local welcomeFrame = NoobsForeverDungeonMapperWelcome
+check(welcomeFrame and welcomeFrame:IsShown(), "the welcome popup showed on first run")
+welcomeFrame.scripts.OnHide(welcomeFrame)
+check(ns.db.welcomed == true, "closing the welcome popup is remembered")
+NoobsForeverDungeonMapperWelcome:Hide()
+ns.OpenOptions()
+local optFrame = NoobsForeverDungeonMapperOptions
+check(optFrame:IsShown(), "options window opens without a command argument")
+SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("options")
+check(not optFrame:IsShown(), "/fd options toggles it")
+ns.OpenOptions()
+ns.db.autoOpen = true
+NoobsForeverDungeonMapper_Binding("options")
+check(not optFrame:IsShown(), "the options key binding toggles the window")
+NoobsForeverDungeonMapper_Binding("toggle")
+NoobsForeverDungeonMapper_Binding("toggle")
+check(BINDING_NAME_NOOBSFOREVERDUNGEONMAPPER_TOGGLE ~= nil, "key binding has a name")
+ns.db.scale = 1
+ns.OpenOptions()
+check(optFrame.scaleText:GetText() == "100%", "window size shows as a percentage")
+optFrame.larger.scripts.OnClick()
+check(ns.db.scale == 1.1 and optFrame.scaleText:GetText() == "110%", "+ makes the window bigger")
+for i = 1, 30 do optFrame.larger.scripts.OnClick() end
+check(ns.db.scale == 2, "size stops at 200%")
+ns.db.scale = 1
+ns.ApplyScale()
+ns.db.welcomed = false
+Fire("PLAYER_ENTERING_WORLD")
+check(NoobsForeverDungeonMapperWelcome:IsShown(), "welcome shows when it was never dismissed")
+NoobsForeverDungeonMapperWelcome:Hide()
 
 realPrint("Unknown instance prints a note")
 printed = {}

@@ -241,6 +241,16 @@ local function Create()
     f.dungeons = SmallButton(f, "Dungeons", 80)
     f.dungeons:SetPoint("RIGHT", f.live, "LEFT", -4, 0)
     f.dungeons:SetScript("OnClick", function(self) ns.ShowDungeonMenu(self) end)
+    f.options = SmallButton(f, "Options", 70)
+    f.options:SetPoint("RIGHT", f.dungeons, "LEFT", -4, 0)
+    f.options:SetScript("OnClick", function() ns.ToggleOptions() end)
+    f.options:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Options")
+        GameTooltip:AddLine("Change how the map behaves. No typing needed.", 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    f.options:SetScript("OnLeave", GameTooltip_Hide)
 
     if ns.db.point then
         local p = ns.db.point
@@ -457,6 +467,7 @@ function ns.ShowDungeonMenu(owner)
     if not (MenuUtil and MenuUtil.CreateContextMenu) then
         ns.Print("Dungeons:")
         for _, id in ipairs(ns.DungeonOrder) do ns.Print(id, ns.Dungeons[id].name) end
+        ns.Print("Options: /fd options")
         return
     end
     MenuUtil.CreateContextMenu(owner or UIParent, function(_, root)
@@ -478,5 +489,8 @@ function ns.ShowDungeonMenu(owner)
                 root:CreateButton(ns.Dungeons[id].name, function() ns.ShowDungeon(id) end)
             end
         end
+        root:CreateDivider()
+        root:CreateButton("Options", function() ns.OpenOptions() end)
+        root:CreateButton("Welcome tips", function() ns.ShowWelcome(true) end)
     end)
 end

@@ -96,3 +96,11 @@ This is the riskiest gap: the addon has never run in the live game.
   turns the map to that anchor's floor. Only The Hall of Thanes has anchors so far, and its three names
   are read from Reyes' map labels, not confirmed in game.
 - Next: run the probe in game, fill `Data/Anchors.lua` from `seen`, then click-to-place "I'm here".
+
+## Status 2026-11-19 (noob-friendly UI)
+
+- `Options.lua`: Options window (checkboxes, window size +/-, clear kills, tester options), first-run welcome
+  popup, entry in the game's Options > AddOns, key bindings (`Bindings.xml`). Map window has an Options
+  button; the minimap right-click menu has Options and Welcome tips. Every slash command now has a button.
+- Checkboxes are drawn from classic textures (no Blizzard templates), so they can't break loading. All of
+  this is untested in the live client: check the look and the AddOns-list entry first.
