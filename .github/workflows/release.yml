@@ -1,5 +1,5 @@
 name: release
-# A version tag (v0.1.0-beta ...) builds the addon zip and makes the GitHub release.
+# A version tag (v0.1.0-beta ...) builds the addon zip, makes the GitHub release, then adds the Windows installer.
 # Pushing a tag needs the maintainer's go-ahead (docs/development.md). No CurseForge upload here.
 on:
   push:
@@ -28,3 +28,24 @@ jobs:
           pre=""; case "$TAG" in *-alpha*|*-beta*) pre="--prerelease";; esac
           gh release create "$TAG" $pre --title "Noobs Forever Dungeon Mapper $TAG" --generate-notes \
             "dist/NoobsForeverDungeonMapper-$TAG.zip"
+
+  # The Windows installer, added to the release made above. The zip stays for players who don't want it.
+  installer:
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write             # upload to the release
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: choco install innosetup -y --no-progress
+      - name: Build the installer and add it to the release
+        run: |
+          $version = $env:TAG.Substring(1)        # v0.1.0-beta -> 0.1.0-beta; iscc stops if the toc differs
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "/DAppVersion=$version" installer\NoobsForeverDungeonMapper.iss
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          gh release upload $env:TAG "dist\NoobsForeverDungeonMapper-Setup-$version.exe"
