@@ -1,4 +1,4 @@
--- Forever Dungeons: core state, events, kill tracking and slash commands.
+-- Noobs Forever Dungeon Mapper: core state, events, kill tracking and slash commands.
 --
 -- What the game allows inside a dungeon (Forever 1.60.x, Midnight-era API):
 --   * GetInstanceInfo() tells us which dungeon we are in (8th return = instanceID).
@@ -26,7 +26,7 @@ ns.DEFAULTS = {
 local RUN_TIMEOUT = 2 * 60 * 60
 
 local function Print(...)
-    print("|cff33ccffForever Dungeons|r:", ...)
+    print("|cff33ccffNoobs Forever Dungeon Mapper|r:", ...)
 end
 ns.Print = Print
 
@@ -257,8 +257,8 @@ frame:RegisterEvent("ADDON_LOADED")
 frame:SetScript("OnEvent", function(self, event, ...)
     if event == "ADDON_LOADED" then
         if ... ~= ADDON then return end
-        ForeverDungeonsDB = ForeverDungeonsDB or {}
-        ns.db = ForeverDungeonsDB
+        NoobsForeverDungeonMapperDB = NoobsForeverDungeonMapperDB or {}
+        ns.db = NoobsForeverDungeonMapperDB
         for k, v in pairs(ns.DEFAULTS) do
             if ns.db[k] == nil then ns.db[k] = type(v) == "table" and {} or v end
         end
@@ -305,9 +305,9 @@ local HELP = {
     "/fd probe [log|clear] - check what position data the game gives addons in a dungeon",
 }
 
-SLASH_FOREVERDUNGEONS1 = "/fd"
-SLASH_FOREVERDUNGEONS2 = "/foreverdungeons"
-SlashCmdList.FOREVERDUNGEONS = function(msg)
+SLASH_NOOBSFOREVERDUNGEONMAPPER1 = "/fd"
+SLASH_NOOBSFOREVERDUNGEONMAPPER2 = "/nfdm"
+SlashCmdList.NOOBSFOREVERDUNGEONMAPPER = function(msg)
     local cmd, arg = (msg or ""):lower():match("^%s*(%S*)%s*(.-)%s*$")
     if cmd == "" then
         ns.ToggleMap()
@@ -339,18 +339,18 @@ SlashCmdList.FOREVERDUNGEONS = function(msg)
     end
 end
 
-function ForeverDungeons_OnCompartmentClick(_, button)
+function NoobsForeverDungeonMapper_OnCompartmentClick(_, button)
     if button == "RightButton" then ns.ShowDungeonMenu() else ns.ToggleMap() end
 end
 
-function ForeverDungeons_OnCompartmentEnter(_, menuButtonFrame)
+function NoobsForeverDungeonMapper_OnCompartmentEnter(_, menuButtonFrame)
     GameTooltip:SetOwner(menuButtonFrame, "ANCHOR_LEFT")
-    GameTooltip:SetText("Forever Dungeons")
+    GameTooltip:SetText("Noobs Forever Dungeon Mapper")
     GameTooltip:AddLine("Left-click: show or hide the map", 1, 1, 1)
     GameTooltip:AddLine("Right-click: pick a dungeon", 1, 1, 1)
     GameTooltip:Show()
 end
 
-function ForeverDungeons_OnCompartmentLeave()
+function NoobsForeverDungeonMapper_OnCompartmentLeave()
     GameTooltip:Hide()
 end

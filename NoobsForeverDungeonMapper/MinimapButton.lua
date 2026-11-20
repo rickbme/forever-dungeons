@@ -1,4 +1,4 @@
--- Forever Dungeons: minimap button.
+-- Noobs Forever Dungeon Mapper: minimap button.
 -- Left-click toggles the map, right-click picks a dungeon, drag moves the button around the
 -- minimap's edge. Uses the classic minimap-button textures, which the Forever client still has.
 local ADDON, ns = ...
@@ -28,7 +28,7 @@ local function OnDragUpdate()
 end
 
 local function Create()
-    button = CreateFrame("Button", "ForeverDungeonsMinimapButton", Minimap)
+    button = CreateFrame("Button", "NoobsForeverDungeonMapperMinimapButton", Minimap)
     button:SetSize(31, 31)
     button:SetFrameStrata("MEDIUM")
     button:SetFrameLevel(8)
@@ -69,7 +69,7 @@ local function Create()
     end)
     button:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-        GameTooltip:SetText("Forever Dungeons")
+        GameTooltip:SetText("Noobs Forever Dungeon Mapper")
         GameTooltip:AddLine("Left-click: show or hide the map", 1, 1, 1)
         GameTooltip:AddLine("Right-click: pick a dungeon", 1, 1, 1)
         GameTooltip:AddLine("Drag: move this button", 1, 1, 1)

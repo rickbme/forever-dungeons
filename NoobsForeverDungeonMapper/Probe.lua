@@ -3,8 +3,8 @@
 --   /fd probe        run every check once and print the results
 --   /fd probe log    toggle recording each sub-zone change (and whether any position API answered)
 --   /fd probe clear  forget the recorded results
--- Results are kept in ForeverDungeonsDB.probe, so they can be read from the SavedVariables file
--- (WTF/Account/<account>/SavedVariables/ForeverDungeons.lua) after logging out.
+-- Results are kept in NoobsForeverDungeonMapperDB.probe, so they can be read from the SavedVariables file
+-- (WTF/Account/<account>/SavedVariables/NoobsForeverDungeonMapper.lua) after logging out.
 local _, ns = ...
 
 local MAX_LOG = 300

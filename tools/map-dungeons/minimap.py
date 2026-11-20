@@ -5,7 +5,7 @@
 # layout Map/Dungeons.lua draws (1002 x 668 in 4 x 3 tiles of 256 px). For dungeons the game has no
 # map of; the floors are set by hand in minimap.json (the editor, editor.py, sets them up).
 #   OpenMap/Media/Textures/Forever/MapDungeonMinimap/<mapID>_<floor>_<n>.tga
-#   ForeverDungeons/Data/DungeonMinimap.lua   per instance: its floors' tiles, names, and where each
+#   NoobsForeverDungeonMapper/Data/DungeonMinimap.lua   per instance: its floors' tiles, names, and where each
 #                                             floor's picture lies in the world
 #
 # The rooms (as tools/map-caves/wmo.py places the caves', each step checked there): the instance's
@@ -31,11 +31,11 @@ sys.path.insert(0, os.path.join(ROOT, "tools", "casc"))
 from casc import Casc
 
 CONFIG = os.path.join(HERE, "minimap.json")
-ADDON = os.path.join(ROOT, "ForeverDungeons")
+ADDON = os.path.join(ROOT, "NoobsForeverDungeonMapper")
 OUT = os.path.join(ADDON, "Media", "Textures", "MapDungeonMinimap")
 BUILD = os.environ.get("FD_BUILD", "1.60.1.70959")   # the Forever build the tables are read at
 PRODUCT = "wowf"
-UA = {"User-Agent": "forever-dungeons-tools/0.1"}
+UA = {"User-Agent": "noobs-forever-dungeon-mapper-tools/0.1"}
 PIC_W, PIC_H = 1002, 668
 O = 32 * 1600 / 3               # world yards from the map's corner to its middle
 TILE = 1600 / 3
@@ -285,7 +285,7 @@ def main():
         "",
         "local _, ns = ...",
         "",
-        "local P = \"Interface\\\\AddOns\\\\ForeverDungeons\\\\Media\\\\Textures\\\\MapDungeonMinimap\\\\\"",
+        "local P = \"Interface\\\\AddOns\\\\NoobsForeverDungeonMapper\\\\Media\\\\Textures\\\\MapDungeonMinimap\\\\\"",
         "",
         "ns.MapDungeonMinimap = {",
     ]

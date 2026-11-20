@@ -2,10 +2,10 @@
 # https://github.com/openmap-world/openmap): tools/map-dungeons/drawn.py. See CREDITS.md.
 # Builds the maps of WoW Forever's own dungeons, which the game has no map of: maps drawn by
 # players who let us use them (art/drawn/dungeons, and its README), credited on the map.
-#   ForeverDungeons/Media/Textures/MapDungeonDrawn/<mapID>_<n>.tga   the picture in Blizzard's dungeon map
+#   NoobsForeverDungeonMapper/Media/Textures/MapDungeonDrawn/<mapID>_<n>.tga   the picture in Blizzard's dungeon map
 #                                       (<drawing>_<n>.tga for one originally packaged by name)
 #                                       layout: 1002 x 668 in 4 x 3 tiles of 256 px (Map/Dungeons.lua's)
-#   ForeverDungeons/Data/DungeonDrawn.lua       per instance: its floors' tiles (and names) and who drew them
+#   NoobsForeverDungeonMapper/Data/DungeonDrawn.lua       per instance: its floors' tiles (and names) and who drew them
 #
 # usage: python -P tools/map-dungeons/drawn.py
 import os, sys
@@ -15,7 +15,7 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..", "..")
 ART = os.path.join(ROOT, "art", "drawn", "dungeons")
-ADDON = os.path.join(ROOT, "ForeverDungeons")
+ADDON = os.path.join(ROOT, "NoobsForeverDungeonMapper")
 OUT = os.path.join(ADDON, "Media", "Textures", "MapDungeonDrawn")
 PIC_W, PIC_H = 1002, 668
 
@@ -70,7 +70,7 @@ def main():
         "",
         "local _, ns = ...",
         "",
-        "local P = \"Interface\\\\AddOns\\\\ForeverDungeons\\\\Media\\\\Textures\\\\MapDungeonDrawn\\\\\"",
+        "local P = \"Interface\\\\AddOns\\\\NoobsForeverDungeonMapper\\\\Media\\\\Textures\\\\MapDungeonDrawn\\\\\"",
         "",
         "ns.MapDungeonDrawn = {",
     ]

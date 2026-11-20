@@ -1,15 +1,15 @@
-# Handoff: Forever Dungeons
+# Handoff: Noobs Forever Dungeon Mapper
 
 Notes for the next working session (Claude Code on the Linux server). Read this first.
 
 ## What this is
 
-A World of Warcraft: Forever addon (`ForeverDungeons/`) that opens the dungeon map when you enter
+A World of Warcraft: Forever addon (`NoobsForeverDungeonMapper/`) that opens the dungeon map when you enter
 a dungeon. It has a minimap button to toggle the map, a floor picker, boss pins, and a boss list
-with kill tracking. Users install it by copying `ForeverDungeons/` into the game's `Interface\AddOns`.
+with kill tracking. Users install it by copying `NoobsForeverDungeonMapper/` into the game's `Interface\AddOns`.
 
-- Repo: https://github.com/rickbme/forever-dungeons (only branch: `main`, which is the default)
-- Version: `0.1.0-beta` (in `ForeverDungeons/ForeverDungeons.toc`)
+- Repo: https://github.com/rickbme/noobs-forever-dungeon-mapper (only branch: `main`, which is the default)
+- Version: `0.1.0-beta` (in `NoobsForeverDungeonMapper/NoobsForeverDungeonMapper.toc`)
 - License: MIT. Blizzard art and data are not covered; the addon loads them from the client at runtime.
 - Status: **never run in the live game yet.** It only passes the offline harness (194 checks).
 
@@ -17,12 +17,12 @@ with kill tracking. Users install it by copying `ForeverDungeons/` into the game
 
 | Path | What |
 |---|---|
-| `ForeverDungeons/ForeverDungeons.toc` | `## Interface: 16001`, game type `forever`, load order |
-| `ForeverDungeons/Data/Dungeons.lua` | **generated**: dungeons, floors (12 texture FileDataIDs each), bosses and pins, sub-zones |
-| `ForeverDungeons/Core.lua` | saved variables (`ForeverDungeonsDB`), events, kill tracking, floor guessing, `/fd` commands, addon compartment |
-| `ForeverDungeons/MapFrame.lua` | the map window: tiles, pins, boss list, location line, dungeon menu (`MenuUtil`) |
-| `ForeverDungeons/MinimapButton.lua` | draggable minimap button; left-click toggles, right-click opens the dungeon menu |
-| `ForeverDungeons/LiveView.lua` | optional enlarged minimap inside dungeons (`/fd live`) |
+| `NoobsForeverDungeonMapper/NoobsForeverDungeonMapper.toc` | `## Interface: 16001`, game type `forever`, load order |
+| `NoobsForeverDungeonMapper/Data/Dungeons.lua` | **generated**: dungeons, floors (12 texture FileDataIDs each), bosses and pins, sub-zones |
+| `NoobsForeverDungeonMapper/Core.lua` | saved variables (`NoobsForeverDungeonMapperDB`), events, kill tracking, floor guessing, `/fd` commands, addon compartment |
+| `NoobsForeverDungeonMapper/MapFrame.lua` | the map window: tiles, pins, boss list, location line, dungeon menu (`MenuUtil`) |
+| `NoobsForeverDungeonMapper/MinimapButton.lua` | draggable minimap button; left-click toggles, right-click opens the dungeon menu |
+| `NoobsForeverDungeonMapper/LiveView.lua` | optional enlarged minimap inside dungeons (`/fd live`) |
 | `tools/gen_data.py` | regenerates `Data/Dungeons.lua` from wago.tools; `--verify` checks the textures exist in the Forever build |
 | `tools/test/harness.lua` | offline test against a stubbed WoW API: `lua5.1 tools/test/harness.lua` |
 
@@ -33,7 +33,7 @@ sudo apt install -y lua5.1 python3-pil gh
 ```
 
 ```bash
-for f in ForeverDungeons/*.lua ForeverDungeons/Data/*.lua; do luac5.1 -p "$f"; done
+for f in NoobsForeverDungeonMapper/*.lua NoobsForeverDungeonMapper/Data/*.lua; do luac5.1 -p "$f"; done
 ```
 
 ```bash
@@ -84,10 +84,10 @@ python3 tools/gen_data.py --verify
 ## To do next
 
 1. **Publish the v0.1.0-beta release.** It couldn't be done from the cloud session. From the
-   server, after `gh auth login`, build the zip with the `ForeverDungeons` folder at the zip's
+   server, after `gh auth login`, build the zip with the `NoobsForeverDungeonMapper` folder at the zip's
    root, then run:
    ```bash
-   gh release create v0.1.0-beta ForeverDungeons-v0.1.0-beta.zip --target main --prerelease --title "Forever Dungeons v0.1.0 Beta" --generate-notes
+   gh release create v0.1.0-beta NoobsForeverDungeonMapper-v0.1.0-beta.zip --target main --prerelease --title "Noobs Forever Dungeon Mapper v0.1.0 Beta" --generate-notes
    ```
 2. **Add a GitHub Actions release workflow.** Bumping `## Version:` in the TOC on `main` would
    then build the zip and publish a release automatically.

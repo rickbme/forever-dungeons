@@ -16,7 +16,7 @@ jobs:
           persist-credentials: false
       - run: sudo apt-get install -y lua5.1
       - name: Syntax
-        run: for f in ForeverDungeons/*.lua ForeverDungeons/Data/*.lua; do luac5.1 -p "$f"; done
+        run: for f in NoobsForeverDungeonMapper/*.lua NoobsForeverDungeonMapper/Data/*.lua; do luac5.1 -p "$f"; done
       - run: python3 -P tools/test/lint.py
       - run: lua5.1 tools/test/harness.lua
       - name: The tools at least compile

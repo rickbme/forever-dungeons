@@ -19,12 +19,12 @@ jobs:
         with:
           persist-credentials: false
       - run: sudo apt-get install -y lua5.1
-      - run: for f in ForeverDungeons/*.lua ForeverDungeons/Data/*.lua; do luac5.1 -p "$f"; done
+      - run: for f in NoobsForeverDungeonMapper/*.lua NoobsForeverDungeonMapper/Data/*.lua; do luac5.1 -p "$f"; done
       - run: python3 -P tools/test/lint.py
       - run: lua5.1 tools/test/harness.lua
       - run: python3 -P tools/package.py "$TAG"
       - name: GitHub release
         run: |
           pre=""; case "$TAG" in *-alpha*|*-beta*) pre="--prerelease";; esac
-          gh release create "$TAG" $pre --title "Forever Dungeons $TAG" --generate-notes \
-            "dist/ForeverDungeons-$TAG.zip"
+          gh release create "$TAG" $pre --title "Noobs Forever Dungeon Mapper $TAG" --generate-notes \
+            "dist/NoobsForeverDungeonMapper-$TAG.zip"

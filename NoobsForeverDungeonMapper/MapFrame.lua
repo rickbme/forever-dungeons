@@ -1,4 +1,4 @@
--- Forever Dungeons: the map window.
+-- Noobs Forever Dungeon Mapper: the map window.
 -- Draws Blizzard's own dungeon map tiles (shipped in the Forever client, loaded by FileDataID),
 -- a floor picker, numbered boss pins and a boss list with kill progress.
 local ADDON, ns = ...
@@ -117,7 +117,7 @@ local function CreateRow(i)
 end
 
 local function Create()
-    f = CreateFrame("Frame", "ForeverDungeonsFrame", UIParent, "BackdropTemplate")
+    f = CreateFrame("Frame", "NoobsForeverDungeonMapperFrame", UIParent, "BackdropTemplate")
     f:SetSize(PAD * 3 + MAP_W + LIST_W, PAD * 2 + 34 + MAP_H + 64)
     f:SetPoint("CENTER")
     f:SetFrameStrata("HIGH")
@@ -138,7 +138,7 @@ local function Create()
         tile = true, tileSize = 32, edgeSize = 24,
         insets = { left = 6, right = 6, top = 6, bottom = 6 },
     })
-    tinsert(UISpecialFrames, "ForeverDungeonsFrame") -- Escape closes it
+    tinsert(UISpecialFrames, "NoobsForeverDungeonMapperFrame") -- Escape closes it
 
     local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", -4, -4)

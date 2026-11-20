@@ -1,4 +1,4 @@
-# Developing Forever Dungeons
+# Developing Noobs Forever Dungeon Mapper
 
 How to set up, change things, check them, and release. [AGENTS.md](../AGENTS.md) has the rules;
 [HANDOFF.md](../HANDOFF.md) has what's known about the Forever client.
@@ -9,7 +9,7 @@ How to set up, change things, check them, and release. [AGENTS.md](../AGENTS.md)
 sudo apt install -y lua5.1 python3-pil gh
 ```
 
-- **Game**: WoW Forever, `## Interface: 16001`. Copy or symlink `ForeverDungeons/` into
+- **Game**: WoW Forever, `## Interface: 16001`. Copy or symlink `NoobsForeverDungeonMapper/` into
   `Interface\AddOns`, turn on Lua errors with `/console scriptErrors 1`, and restart the client after
   changing textures.
 - Run Python with `-P` (`python3 -P tools/...`) so the script's folder stays off the import path.
@@ -21,7 +21,7 @@ sudo apt install -y lua5.1 python3-pil gh
 1. Change the Lua, or a tool and regenerate its output.
 2. Check (CI runs the same):
    ```bash
-   for f in ForeverDungeons/*.lua ForeverDungeons/Data/*.lua; do luac5.1 -p "$f"; done
+   for f in NoobsForeverDungeonMapper/*.lua NoobsForeverDungeonMapper/Data/*.lua; do luac5.1 -p "$f"; done
    python3 -P tools/test/lint.py
    lua5.1 tools/test/harness.lua
    ```
@@ -37,16 +37,16 @@ Inside a dungeon, run these once and then play normally:
 - `/fd probe` prints what `C_Map.GetPlayerMapPosition`, `UnitPosition`, `GetPlayerFacing` and the
   zone-text functions return (nil, a number, or a secret value) and says whether any position API works.
 - `/fd probe log` records every sub-zone change, with whether a position API answered.
-- The results are saved in `ForeverDungeonsDB.probe` and `ForeverDungeonsDB.seen` (every sub-zone name you
+- The results are saved in `NoobsForeverDungeonMapperDB.probe` and `NoobsForeverDungeonMapperDB.seen` (every sub-zone name you
   entered, per dungeon). After logging out, read them from
-  `WTF/Account/<account>/SavedVariables/ForeverDungeons.lua`, and use them to fill in `Data/Anchors.lua`.
+  `WTF/Account/<account>/SavedVariables/NoobsForeverDungeonMapper.lua`, and use them to fill in `Data/Anchors.lua`.
 
 ## Releasing
 
-1. Bump `## Version:` in `ForeverDungeons/ForeverDungeons.toc` and commit.
+1. Bump `## Version:` in `NoobsForeverDungeonMapper/NoobsForeverDungeonMapper.toc` and commit.
 2. With the maintainer's go-ahead, tag it: `git tag v0.1.0-beta && git push origin v0.1.0-beta`.
 3. The `release` workflow checks the tag matches the TOC version, runs the checks, zips
-   `ForeverDungeons/` (folder at the zip root) and makes a GitHub release. Tags with `-alpha` or
+   `NoobsForeverDungeonMapper/` (folder at the zip root) and makes a GitHub release. Tags with `-alpha` or
    `-beta` are marked pre-release. CurseForge is not automated.
 
 To build the zip by hand: `python3 -P tools/package.py v0.1.0-beta` (writes `dist/`).

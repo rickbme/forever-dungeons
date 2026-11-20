@@ -1,4 +1,4 @@
-"""Build dist/ForeverDungeons-<tag>.zip with the ForeverDungeons folder at the zip's root.
+"""Build dist/NoobsForeverDungeonMapper-<tag>.zip with the NoobsForeverDungeonMapper folder at the zip's root.
 
     python3 -P tools/package.py v0.1.0-beta
 
@@ -10,7 +10,7 @@ import sys
 import zipfile
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-ADDON = "ForeverDungeons"
+ADDON = "NoobsForeverDungeonMapper"
 
 
 def toc_version():

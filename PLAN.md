@@ -1,4 +1,4 @@
-# Plan: from Forever Dungeons to a world map addon
+# Plan: from Noobs Forever Dungeon Mapper to a world map addon
 
 Draft, 2026-11-19. Reference: https://github.com/openmap-world/openmap (MIT, code only; Blizzard art excluded).
 
@@ -27,7 +27,7 @@ upstream is cheaper than rebuilding it.
 - Add `AGENTS.md` and `docs/development.md` (rules above, verify commands, in-game-check list).
 - Add `.claude/settings.json` allow rules (handoff item 3).
 - Add `.github/workflows/test.yml` (luac syntax check + harness) and a tag-triggered `release.yml`
-  that builds `ForeverDungeons-<tag>.zip` with the folder at the zip root (handoff items 1-2).
+  that builds `NoobsForeverDungeonMapper-<tag>.zip` with the folder at the zip root (handoff items 1-2).
 - Add a lint script (single-backslash texture paths, tabs, no global leaks).
 - Publish v0.1.0-beta after `gh auth login`.
 - Baseline today: all `.lua` pass `luac5.1 -p`; harness runs on Lua 5.1.
@@ -62,7 +62,7 @@ This is the riskiest gap: the addon has never run in the live game.
 ## Not decided / needs the user
 
 - The differentiator vs OpenMap (above).
-- Name: keep "Forever Dungeons" or rename once it is more than dungeons.
+- Name: keep "Noobs Forever Dungeon Mapper" or rename once it is more than dungeons.
 - Whether to ask OpenMap's maintainers about sharing data or art.
 
 ## Status 2026-11-19 (maps from the game's own files)
@@ -92,7 +92,7 @@ This is the riskiest gap: the addon has never run in the live game.
 - Idea: since coordinates are hidden in instances, mark where you are by sub-zone ("you are here" marker
   from `Data/Anchors.lua`), plus manual placement and an in-game placer later.
 - Built: `/fd probe` (`Probe.lua`) to test the game's position APIs in a live dungeon; sub-zone names
-  you enter are always recorded in `ForeverDungeonsDB.seen`; the marker moves with the sub-zone and
+  you enter are always recorded in `NoobsForeverDungeonMapperDB.seen`; the marker moves with the sub-zone and
   turns the map to that anchor's floor. Only The Hall of Thanes has anchors so far, and its three names
   are read from Reyes' map labels, not confirmed in game.
 - Next: run the probe in game, fill `Data/Anchors.lua` from `seen`, then click-to-place "I'm here".

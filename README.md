@@ -1,7 +1,8 @@
-# Forever Dungeons
+# Noobs Forever Dungeon Mapper
 
-A World of Warcraft: Forever addon that opens the dungeon's map as soon as you walk into a
-dungeon. It shows every floor, numbered boss pins, and which bosses you have already killed.
+A World of Warcraft: Forever addon from the **Noobs Forever** guild that opens the dungeon's map as soon as
+you walk into a dungeon. It shows every floor, numbered boss pins, and which bosses you have already killed.
+Work in progress (beta): it has not been tested in the live game yet.
 
 - **Automatic**: zone into a dungeon and the map opens on the right floor. Leave and it closes.
 - **Minimap button**: left-click shows or hides the map whenever you want it, so it never has to
@@ -9,7 +10,10 @@ dungeon. It shows every floor, numbered boss pins, and which bosses you have alr
   Close the map with the button, the X or Escape, and it stays closed until you enter the next dungeon.
 - **Blizzard's own maps** for the 20 classic dungeons and Onyxia's Lair (53 floors). The Forever
   client has no dungeon maps of its own, but it still ships the old map textures. The addon draws
-  them by file ID, so no artwork is bundled.
+  them by file ID, so no artwork is bundled for these.
+- **Maps for Forever's new dungeons**, drawn by [Santiago Reyes](https://sreyesmaps.com) (Atlas de Azeroth:
+  Forever) and used with his permission, with his watermark and credit kept on the map. Dungeons without
+  one use floors built from the game's own minimap pictures where the client has them.
 - **Boss pins and progress**: 108 bosses have pins on the map. Every boss is in the list beside it,
   in the game's order. Kills are picked up from the game's encounter events. The next boss pulses
   gold, killed bosses turn grey, and right-clicking a boss toggles it by hand.
@@ -18,17 +22,18 @@ dungeon. It shows every floor, numbered boss pins, and which bosses you have alr
 - **Live view (optional)**: enlarges the minimap while you are in a dungeon (see below).
 - **Browse anywhere**: `/fd list` (or right-click in the addon compartment) opens any dungeon's map.
 
-## Why there is no "you are here" dot
+## "You are here"
 
 Since patch 7.1, Blizzard blocks addons from reading the player's position inside instances:
-`C_Map.GetPlayerMapPosition`, `UnitPosition` and `GetPlayerFacing` all return nothing there. The
-Forever client also reports no current floor inside dungeons. So the addon never pretends to know
-exactly where you stand. Instead it uses what the game does allow:
+`C_Map.GetPlayerMapPosition`, `UnitPosition` and `GetPlayerFacing` are expected to return nothing there
+(`/fd probe` checks this in your client). So the addon never pretends to know exactly where you stand.
+Instead, a blue marker shows the **area** you are in, from the sub-zone name, where we have mapped it.
+It uses what the game does allow:
 
 | Signal | What it gives you |
 |---|---|
 | `GetInstanceInfo()` | which dungeon you are in |
-| `GetSubZoneText()` | the named area you stand in. Shown under the map; switches floors where a floor has that name. |
+| `GetSubZoneText()` | the named area you stand in. Shown under the map, moves the "you are here" marker, and switches floors. |
 | `ENCOUNTER_START` / `ENCOUNTER_END` | the boss you are fighting and kills, which mark your progress through the dungeon |
 | the minimap | the game still draws your live position here. **Live view** enlarges it inside dungeons. |
 
@@ -38,16 +43,16 @@ in combat. Your normal size comes back when you leave the dungeon. Turn it on wi
 
 ## Install
 
-1. Copy the `ForeverDungeons` folder into
+1. Copy the `NoobsForeverDungeonMapper` folder into
    `World of Warcraft\_forever_\Interface\AddOns\`. The game-version folder may be named
    differently on your install; it is the one that contains `Wow.exe` for Forever.
-2. Restart the game or type `/reload`, and make sure *Forever Dungeons* is ticked in the AddOns list.
+2. Restart the game or type `/reload`, and make sure *Noobs Forever Dungeon Mapper* is ticked in the AddOns list.
 
 ## Commands
 
 | Command | |
 |---|---|
-| `/fd` | show or hide the map (current dungeon, or the last one viewed) |
+| `/fd` (or `/nfdm`) | show or hide the map (current dungeon, or the last one viewed) |
 | `/fd list` | pick any dungeon to view |
 | `/fd reset` | clear boss kills for the current dungeon (also done automatically when the game resets it) |
 | `/fd auto` | toggle opening the map automatically |
@@ -55,6 +60,7 @@ in combat. Your normal size comes back when you leave the dungeon. Turn it on wi
 | `/fd live` | toggle live view (enlarged minimap in dungeons) |
 | `/fd button` | show or hide the minimap button |
 | `/fd scale 1.2` | map window size, 0.5 to 2 |
+| `/fd probe` | check which position data the game gives addons in a dungeon (`probe log` records sub-zone changes) |
 
 ## Coverage
 
@@ -62,14 +68,15 @@ in combat. Your normal size comes back when you leave the dungeon. Turn it on wi
 |---|---|
 | Map + boss pins | Wailing Caverns, Shadowfang Keep (2 of 8 pinned), Blackfathom Deeps, Razorfen Kraul, Gnomeregan, Razorfen Downs, Uldaman, Zul'Farrak, Maraudon, Sunken Temple, Blackrock Depths, Dire Maul, Blackrock Spire, Stratholme |
 | Map, boss list without pins | Ragefire Chasm, Deadmines, Stockade, Scarlet Monastery, Scholomance, Onyxia's Lair |
-| Boss list only (no map art exists yet) | Hall of Thanes, Ruins of Lordaeron, Excavation Site: Wetlands, City of Dalaran, The Drowned City, Krol'dok Stronghold, Alcaz Prison, Blackmaw Hold, The Shaper's Terrace |
+| Map by Santiago Reyes, boss list without pins | The Hall of Thanes, Ruins of Lordaeron, Excavation Site: Wetlands, City of Dalaran (and The Underbelly), The Drowned City, Krol'dok Stronghold, Blackmaw Hold, The Shaper's Terrace |
+| Boss list only (no map yet) | Alcaz Prison |
 
 The missing pins are dungeons whose only public boss positions belong to their later
 Cataclysm/Mists remakes, which have different layouts.
 
 ## How the data is made
 
-`ForeverDungeons/Data/Dungeons.lua` is generated by `tools/gen_data.py` from the public game-data
+`NoobsForeverDungeonMapper/Data/Dungeons.lua` is generated by `tools/gen_data.py` from the public game-data
 tables on [wago.tools](https://wago.tools):
 
 - **Forever client** (latest `wowf` build): instance IDs and names, boss lists (`DungeonEncounter`), named areas (`AreaTable`).
@@ -95,18 +102,23 @@ leaving. It checks logic only; how the window looks has to be checked in game.
 
 ## Ideas for later
 
-- Maps for Forever's new dungeons. The client has no map art for them; options are stitching the
-  game's own minimap tiles or community-drawn maps (with the artist's permission).
-- Boss pins for the remade dungeons, placed by hand in game.
-- Quest and loot notes per boss.
+See [PLAN.md](PLAN.md). In short: boss pins for the new and remade dungeons, more "you are here" areas
+(filled in from what the probe records in game), a click-to-place marker, quest and loot notes, and a
+world map.
 
 ## Credits and research
 
-- Map art and game data: Blizzard Entertainment, loaded from the game client at runtime.
+- **[Santiago Reyes](https://sreyesmaps.com)**: the maps of Forever's new dungeons, from his project
+  [Atlas de Azeroth: Forever](https://sreyesmaps.com/post/proyecto-atlas-de-azeroth-forever). Not covered
+  by this repository's licence; used as his announcement allows. Thank you!
+- **[OpenMap](https://github.com/openmap-world/openmap)** (MIT): this addon is modelled on it, and some of
+  its tools are adapted here. See [CREDITS.md](CREDITS.md) for the details and the licence text.
+- Map art and game data: Blizzard Entertainment, loaded from the game client (or cut from it, see
+  `NoobsForeverDungeonMapper/Media/NOTICE.md`).
 - Game data mirror: [wago.tools](https://wago.tools).
 - API reference: [Warcraft Wiki](https://warcraft.wiki.gg) and Blizzard's UI source
   ([Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), `forever` branch).
-- Approaches studied (no code copied): [Dungeon Crawler Forever](https://github.com/perweum/dungeon-crawler-forever)
+- Approaches studied (no code copied; both are GPL): [Dungeon Crawler Forever](https://github.com/perweum/dungeon-crawler-forever)
   and [WoW Handbook](https://github.com/Arcaneology/WowHandbookAddon).
 
 World of Warcraft is a trademark of Blizzard Entertainment. This project is not affiliated with Blizzard.

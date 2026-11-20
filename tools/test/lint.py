@@ -15,7 +15,7 @@ import os
 import re
 import sys
 
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "ForeverDungeons")
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "NoobsForeverDungeonMapper")
 
 NAME = r"[A-Za-z_][A-Za-z0-9_]*"
 
@@ -131,8 +131,8 @@ WOW_API = {
     "debugprofilestop", "GetFramerate", "IsAddOnLoaded", "GetUnitSpeed", "IsPlayerMoving", "IsMouselooking", "IsModifiedClick", "GetPhysicalScreenSize", "IsMouseButtonDown",
     "IsInGuild", "UnitIsPlayer", "GetUnitName", "UnitName", "Ambiguate", "ToggleWorldMap",
     "UnitRace", "GetLocale", "PlaySound", "IsInInstance", "GetInstanceInfo",
-    "GetSubZoneText", "UnitPosition", "GetPlayerFacing", "IsIndoors", "GetZoneText", "GetRealZoneText", "GetMinimapZoneText", "ForeverDungeons_OnCompartmentClick", "ForeverDungeons_OnCompartmentEnter",
-    "ForeverDungeons_OnCompartmentLeave", "GetNormalizedRealmName", "GetRealmName", "GetNumGuildMembers", "GetGuildRosterInfo", "BNGetNumFriends",
+    "GetSubZoneText", "UnitPosition", "GetPlayerFacing", "IsIndoors", "GetZoneText", "GetRealZoneText", "GetMinimapZoneText", "NoobsForeverDungeonMapper_OnCompartmentClick", "NoobsForeverDungeonMapper_OnCompartmentEnter",
+    "NoobsForeverDungeonMapper_OnCompartmentLeave", "GetNormalizedRealmName", "GetRealmName", "GetNumGuildMembers", "GetGuildRosterInfo", "BNGetNumFriends",
 }
 
 

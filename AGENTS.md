@@ -7,16 +7,16 @@ follow [OpenMap](https://github.com/openmap-world/openmap)'s, which this addon i
 
 ## What this is
 
-Forever Dungeons: a map addon for WoW Forever (Lua 5.1 in the game's retail-engine client,
+Noobs Forever Dungeon Mapper: a map addon for WoW Forever (Lua 5.1 in the game's retail-engine client,
 `## Interface: 16001`). It opens the dungeon map when you enter a dungeon, with floors, boss pins and
-kill tracking. The addon is `ForeverDungeons/`; everything else is tooling and docs.
+kill tracking. The addon is `NoobsForeverDungeonMapper/`; everything else is tooling and docs.
 
 ## Hard rules
 
 1. **True to the game.** Art is Blizzard's, loaded from the client by FileDataID. Facts (names,
    positions, bosses) come from the game's tables or a cited source. Player-drawn art only with the
    artist's permission, credited in game and in CREDITS.md.
-2. **Generated files are generated.** `ForeverDungeons/Data/*.lua` comes from `tools/gen_data.py`.
+2. **Generated files are generated.** `NoobsForeverDungeonMapper/Data/*.lua` comes from `tools/gen_data.py`.
    Change the script and rerun it; commit both together.
 3. **Code from other addons.** OpenMap's code, data tables and tools are MIT and may be reused: say so
    in the file's first lines and add it to the table in CREDITS.md. Its player-drawn art and Blizzard
@@ -32,7 +32,7 @@ kill tracking. The addon is `ForeverDungeons/`; everything else is tooling and d
 ## Verify every change
 
 ```bash
-for f in ForeverDungeons/*.lua ForeverDungeons/Data/*.lua; do luac5.1 -p "$f"; done
+for f in NoobsForeverDungeonMapper/*.lua NoobsForeverDungeonMapper/Data/*.lua; do luac5.1 -p "$f"; done
 python3 -P tools/test/lint.py
 lua5.1 tools/test/harness.lua
 ```

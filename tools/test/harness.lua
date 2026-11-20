@@ -3,7 +3,7 @@
 -- Run from the repository root:  lua5.1 tools/test/harness.lua
 -- This only checks the addon's own logic; it cannot show what the frames look like in game.
 
-local ADDON = "ForeverDungeons"
+local ADDON = "NoobsForeverDungeonMapper"
 local failures = 0
 local out = print
 local function check(cond, msg)
@@ -109,7 +109,7 @@ end
 -------------------------------------------------------------------------------
 local ns = {}
 for _, file in ipairs({ "Data/Dungeons.lua", "Data/DungeonDrawn.lua", "Data/DungeonMinimap.lua", "Data/Merge.lua", "Data/Anchors.lua", "Core.lua", "Probe.lua", "MapFrame.lua", "LiveView.lua", "MinimapButton.lua" }) do
-    local chunk = assert(loadfile("ForeverDungeons/" .. file))
+    local chunk = assert(loadfile("NoobsForeverDungeonMapper/" .. file))
     chunk(ADDON, ns)
 end
 Fire("ADDON_LOADED", ADDON)
@@ -151,7 +151,7 @@ for id, d in pairs(ns.Dungeons) do
 end
 
 realPrint("Minimap button")
-local mb = ForeverDungeonsMinimapButton
+local mb = NoobsForeverDungeonMapperMinimapButton
 check(mb and mb:IsShown(), "minimap button is created and shown")
 cursor[1], cursor[2] = 100, 200 -- straight above the minimap centre
 mb.scripts.OnDragStart(mb)
@@ -163,26 +163,26 @@ check(mb.scripts.OnUpdate == nil, "dragging stops on release")
 realPrint("Entering Blackfathom Deeps")
 game.inInstance, game.instanceType, game.instanceID, game.instanceName = true, "party", 48, "Blackfathom Deeps"
 Fire("PLAYER_ENTERING_WORLD")
-check(ForeverDungeonsFrame and ForeverDungeonsFrame:IsShown(), "map opens automatically")
+check(NoobsForeverDungeonMapperFrame and NoobsForeverDungeonMapperFrame:IsShown(), "map opens automatically")
 check(ns.ViewedInstance() == 48, "map shows Blackfathom Deeps")
-check(ForeverDungeonsFrame.title.text == "Blackfathom Deeps", "title is the dungeon name")
-check(ForeverDungeonsFrame.tiles[1].texture == ns.Dungeons[48].floors[1].tiles[1], "first floor tiles are drawn")
+check(NoobsForeverDungeonMapperFrame.title.text == "Blackfathom Deeps", "title is the dungeon name")
+check(NoobsForeverDungeonMapperFrame.tiles[1].texture == ns.Dungeons[48].floors[1].tiles[1], "first floor tiles are drawn")
 
 realPrint("Walking into a named area that is also a floor")
 game.subzone = "Moonshrine Sanctum"
 Fire("ZONE_CHANGED_INDOORS")
-check(ForeverDungeonsFrame.tiles[1].texture == ns.Dungeons[48].floors[2].tiles[1], "floor follows the sub-zone")
-check(ForeverDungeonsFrame.location.text:find("Moonshrine Sanctum", 1, true), "location line shows the area")
+check(NoobsForeverDungeonMapperFrame.tiles[1].texture == ns.Dungeons[48].floors[2].tiles[1], "floor follows the sub-zone")
+check(NoobsForeverDungeonMapperFrame.location.text:find("Moonshrine Sanctum", 1, true), "location line shows the area")
 
 realPrint("Killing the first boss")
 local first = ns.Dungeons[48].bosses[1]
 Fire("ENCOUNTER_START", first.id, first.name, 1, 5)
-check(ForeverDungeonsFrame.location.text:find("Fighting", 1, true), "location line shows the fight")
+check(NoobsForeverDungeonMapperFrame.location.text:find("Fighting", 1, true), "location line shows the fight")
 Fire("ENCOUNTER_END", first.id, first.name, 1, 5, 1)
 check(ns.IsKilled(48, first), "boss is marked killed")
 check(select(1, ns.KillCount(48)) == 1, "kill count is 1")
 check(ns.NextBoss(48) == ns.Dungeons[48].bosses[2], "next boss advances")
-check(ForeverDungeonsFrame.subtitle.text:find("1/" .. #ns.Dungeons[48].bosses, 1, true), "subtitle shows progress")
+check(NoobsForeverDungeonMapperFrame.subtitle.text:find("1/" .. #ns.Dungeons[48].bosses, 1, true), "subtitle shows progress")
 
 realPrint("A wipe does not count as a kill")
 local second = ns.Dungeons[48].bosses[2]
@@ -204,51 +204,51 @@ Fire("CHAT_MSG_SYSTEM", "Blackfathom Deeps has been reset.")
 check(select(1, ns.KillCount(48)) == 0, "kills cleared by the reset message")
 
 realPrint("Live view")
-SlashCmdList.FOREVERDUNGEONS("live")
+SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("live")
 check(Minimap:GetScale() == ns.db.liveScale, "minimap enlarged inside the dungeon")
 game.combat = true
 
 realPrint("Leaving the dungeon in combat")
 game.inInstance, game.instanceType, game.instanceID, game.instanceName, game.subzone = false, "none", nil, nil, ""
 Fire("PLAYER_ENTERING_WORLD")
-check(not ForeverDungeonsFrame:IsShown(), "map closes on leaving")
+check(not NoobsForeverDungeonMapperFrame:IsShown(), "map closes on leaving")
 check(Minimap:GetScale() == ns.db.liveScale, "minimap left alone during combat")
 game.combat = false
 Fire("PLAYER_REGEN_ENABLED")
 check(Minimap:GetScale() == 1, "minimap restored after combat")
 
 realPrint("Slash command opens the last dungeon outside")
-SlashCmdList.FOREVERDUNGEONS("")
-check(ForeverDungeonsFrame:IsShown() and ns.ViewedInstance() == 48, "/fd reopens the last viewed dungeon")
-check(ForeverDungeonsFrame.location.text:find("Viewing only", 1, true), "outside, the map says it is only a preview")
+SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("")
+check(NoobsForeverDungeonMapperFrame:IsShown() and ns.ViewedInstance() == 48, "/fd reopens the last viewed dungeon")
+check(NoobsForeverDungeonMapperFrame.location.text:find("Viewing only", 1, true), "outside, the map says it is only a preview")
 
 realPrint("Minimap button toggles the map")
 mb.scripts.OnClick(mb, "LeftButton")
-check(not ForeverDungeonsFrame:IsShown(), "click hides the map")
+check(not NoobsForeverDungeonMapperFrame:IsShown(), "click hides the map")
 mb.scripts.OnClick(mb, "LeftButton")
-check(ForeverDungeonsFrame:IsShown(), "click shows it again")
-SlashCmdList.FOREVERDUNGEONS("button")
+check(NoobsForeverDungeonMapperFrame:IsShown(), "click shows it again")
+SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("button")
 check(not mb:IsShown(), "/fd button hides the button")
-SlashCmdList.FOREVERDUNGEONS("button")
+SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("button")
 check(mb:IsShown(), "/fd button shows it again")
 
 realPrint("A new Forever dungeon without art")
 ns.ShowDungeon(2994)
-check(ForeverDungeonsFrame.noArt:IsShown(), "no-art message shows")
-check(not ForeverDungeonsFrame.tiles[1]:IsShown(), "no tiles drawn")
+check(NoobsForeverDungeonMapperFrame.noArt:IsShown(), "no-art message shows")
+check(not NoobsForeverDungeonMapperFrame.tiles[1]:IsShown(), "no tiles drawn")
 
 realPrint("A new Forever dungeon with a drawn map shows the credit")
 ns.ShowDungeon(3065)
-check(not ForeverDungeonsFrame.noArt:IsShown(), "no no-art message")
-check(ForeverDungeonsFrame.tiles[1]:IsShown(), "tiles drawn")
-check(ForeverDungeonsFrame.credit:GetText():find("Santiago Reyes", 1, true), "artist is credited on the map")
+check(not NoobsForeverDungeonMapperFrame.noArt:IsShown(), "no no-art message")
+check(NoobsForeverDungeonMapperFrame.tiles[1]:IsShown(), "tiles drawn")
+check(NoobsForeverDungeonMapperFrame.credit:GetText():find("Santiago Reyes", 1, true), "artist is credited on the map")
 
 
 realPrint("You-are-here marker follows the sub-zone")
 game.inInstance, game.instanceType, game.instanceID, game.instanceName = true, "party", 3065, "The Hall of Thanes"
 game.subzone = "Dark Iron Ingress"
 Fire("PLAYER_ENTERING_WORLD")
-local here = ForeverDungeonsFrame.here
+local here = NoobsForeverDungeonMapperFrame.here
 check(here:IsShown(), "marker shows in a known area")
 check(here.anchor and here.anchor.sub == "Dark Iron Ingress", "marker uses that area's anchor")
 game.subzone = "Somewhere Unlisted"
@@ -258,12 +258,12 @@ check(ns.db.seen[3065]["Somewhere Unlisted"] == 1, "the new sub-zone name is rec
 
 realPrint("Probe")
 printed = {}
-SlashCmdList.FOREVERDUNGEONS("probe")
+SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("probe")
 local joined = table.concat(printed, "\n")
 check(joined:find("UnitPosition = nil", 1, true), "probe reports a blocked API as nil")
 check(joined:find("only sub-zone anchors", 1, true), "probe says no position API answered")
 check(ns.db.probe.last and ns.db.probe.last.anyPosition == false, "probe result is saved")
-SlashCmdList.FOREVERDUNGEONS("probe log")
+SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("probe log")
 game.subzone = "Anvilmar's Rest"
 Fire("ZONE_CHANGED_INDOORS")
 check(#ns.db.probe.log == 1 and ns.db.probe.log[1].sub == "Anvilmar's Rest", "probe log records a sub-zone change")
@@ -272,7 +272,7 @@ game.subzone = "Reliquary of Kings"
 Fire("ZONE_CHANGED_INDOORS")
 check(ns.db.probe.log[2].anyPosition == true, "probe log notices when a position API answers")
 UnitPosition = function() return nil end
-SlashCmdList.FOREVERDUNGEONS("probe clear")
+SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("probe clear")
 check(ns.db.probe == nil, "probe clear forgets results")
 game.inInstance, game.instanceType, game.instanceID, game.instanceName, game.subzone = false, "none", nil, nil, ""
 Fire("PLAYER_ENTERING_WORLD")

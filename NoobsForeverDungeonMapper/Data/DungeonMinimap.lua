@@ -8,7 +8,7 @@
 
 local _, ns = ...
 
-local P = "Interface\\AddOns\\ForeverDungeons\\Media\\Textures\\MapDungeonMinimap\\"
+local P = "Interface\\AddOns\\NoobsForeverDungeonMapper\\Media\\Textures\\MapDungeonMinimap\\"
 
 ns.MapDungeonMinimap = {
 	[2959] = { -- City of Dalaran

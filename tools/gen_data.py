@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate ForeverDungeons/Data/Dungeons.lua from public game-data tables.
+"""Generate NoobsForeverDungeonMapper/Data/Dungeons.lua from public game-data tables.
 
 Sources (all fetched from https://wago.tools, which mirrors Blizzard's client data):
   * Forever client (product "wowf"): instance names (Map), boss lists (DungeonEncounter),
@@ -9,7 +9,7 @@ Sources (all fetched from https://wago.tools, which mirrors Blizzard's client da
     no dungeon maps of its own, but it still ships the legacy map textures these tables point
     to, so the addon can draw them by FileDataID without redistributing any art.
 
-Nothing downloaded is executed; CSVs are cached in --cache (default ~/.cache/forever-dungeons).
+Nothing downloaded is executed; CSVs are cached in --cache (default ~/.cache/noobs-forever-dungeon-mapper).
 
 Usage:
   python3 tools/gen_data.py            # fetch (if not cached) and write the Lua data file
@@ -28,7 +28,7 @@ FOREVER_PRODUCT = "wowf"
 ART_PRODUCT = "wow_classic"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "ForeverDungeons", "Data", "Dungeons.lua")
+OUT = os.path.join(ROOT, "NoobsForeverDungeonMapper", "Data", "Dungeons.lua")
 
 # Forever's dungeon and raid list (Warcraft Wiki, "World of Warcraft: Forever", November 2026).
 # instanceID = Map.ID = 8th return of GetInstanceInfo().
@@ -75,7 +75,7 @@ TILE_COLS, TILE_ROWS = 4, 3
 
 def get(url):
     # wago.tools rejects Python's default User-Agent.
-    return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "forever-dungeons-gen/1.0"}))
+    return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "noobs-forever-dungeon-mapper-gen/1.0"}))
 
 
 def latest_build(product):
@@ -232,7 +232,7 @@ def verify(data, forever_build):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--cache", default=os.path.expanduser("~/.cache/forever-dungeons"))
+    ap.add_argument("--cache", default=os.path.expanduser("~/.cache/noobs-forever-dungeon-mapper"))
     ap.add_argument("--forever-build", help="Forever build (default: latest on wago.tools)")
     ap.add_argument("--art-build", help="MoP Classic build for map data (default: latest)")
     ap.add_argument("--verify", action="store_true", help="check the map tiles exist in the Forever build")

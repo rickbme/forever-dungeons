@@ -6,7 +6,7 @@
 --                      verified = true once seen in game }, ... }
 -- x and y are fractions of the 1002 x 668 map picture, as the boss pins use.
 -- Hand-written. The names below are read off Santiago Reyes' Hall of Thanes map labels and are not
--- yet confirmed in game: /fd probe log records the real names (ForeverDungeonsDB.seen) so this table
+-- yet confirmed in game: /fd probe log records the real names (NoobsForeverDungeonMapperDB.seen) so this table
 -- can be filled in and checked.
 local _, ns = ...
 

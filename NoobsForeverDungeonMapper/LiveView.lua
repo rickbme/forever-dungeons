@@ -1,4 +1,4 @@
--- Forever Dungeons: "live view".
+-- Noobs Forever Dungeon Mapper: "live view".
 -- Addons cannot read the player's position inside a dungeon, but the game's own minimap still
 -- draws it. Live view simply makes the minimap bigger while you are in a dungeon and puts it
 -- back when you leave. Only the minimap's own scale is changed (never its container, which
