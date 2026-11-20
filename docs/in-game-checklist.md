@@ -1,0 +1,86 @@
+# In-game checklist
+
+A step-by-step pass for the person testing the addon in the game (you don't need to know any code).
+Tick things off as you go. Anything that looks wrong: take a screenshot, note what you did just before,
+and copy any red error text. That's all we need.
+
+## 0. Get it ready
+
+- [ ] Delete any older `NoobsForeverDungeonMapper` or `ForeverDungeons` folder from
+      `World of Warcraft\_forever_\Interface\AddOns\`.
+- [ ] Copy the new `NoobsForeverDungeonMapper` folder in (from the addon zip, see the README).
+- [ ] **Fully restart the game** (not just `/reload`): the map pictures are new files.
+- [ ] Type `/console scriptErrors 1` so any error shows on screen.
+- [ ] On the character select screen, click *AddOns* and make sure *Noobs Forever Dungeon Mapper* is ticked.
+
+## 1. Anywhere in the world
+
+- [ ] A welcome window appears the first time. Its buttons work (*Pick a dungeon*, *Options*, *Got it*).
+- [ ] A map icon sits on the edge of your minimap. Left-click shows or hides the dungeon map window;
+      right-click shows a menu with the dungeon list, *World map*, *Options* and *Welcome tips*.
+- [ ] Drag the minimap icon around the minimap. It follows and stays where you drop it.
+- [ ] **Options** (from the window's *Options* button): clicking each box turns it on and off, the *-* and *+*
+      buttons change the window size, and Escape closes it.
+- [ ] *Esc > Options > AddOns* has a *Noobs Forever Dungeon Mapper* page with an *Open the options* button.
+- [ ] *Esc > Options > Keybindings > AddOns* lists the show/hide map, world map and options bindings.
+
+## 2. The world map
+
+- [ ] Open it (*World map* button, the minimap right-click menu, or its key). Azeroth shows with red dots.
+- [ ] Clicking *Eastern Kingdoms* or *Kalimdor* (the buttons below the map, or the continent itself) zooms in.
+- [ ] The dots sit on the right places: for example Deadmines in Westfall, Stockade in Stormwind,
+      Ragefire Chasm by Orgrimmar, Wailing Caverns in the Barrens. **Note any dot that is clearly wrong.**
+- [ ] Hovering a dot shows the dungeon's name and levels. Clicking it opens that dungeon's map.
+
+## 3. Inside a dungeon
+
+Go into any dungeon (The Hall of Thanes is best, then Ragefire Chasm or Deadmines).
+
+- [ ] The map opens by itself on a sensible floor. It closes when you leave.
+- [ ] Boss numbers on the map match the list. Clicking a boss in the list pulses its pin.
+- [ ] After you kill a boss, it goes grey with a tick and the next boss pulses gold.
+- [ ] If the dungeon has more than one floor, the < and > buttons change floor.
+- [ ] For a new dungeon: the map is Santiago Reyes' drawing, with **"Map by Santiago Reyes"** at the bottom
+      right and his watermark still visible.
+- [ ] In **The Hall of Thanes**: walking into a new area moves a blue ring on the map ("you are here").
+      Does the ring match where you really are? Note the area names shown under the map.
+- [ ] Turn on *Live view* in Options: the minimap gets bigger inside a dungeon and goes back to normal outside.
+
+## 4. The position check (very useful, 2 minutes)
+
+Stand inside a dungeon, then type:
+
+```
+/fd probe
+```
+
+- [ ] Take a screenshot of the chat lines it prints (it lists what the game does and doesn't tell addons).
+
+Then turn on recording, walk through as much of the dungeon as you can, and log out from the character
+select screen (this saves the file):
+
+```
+/fd probe log
+```
+
+- [ ] Send the file `World of Warcraft\_forever_\WTF\Account\<your account>\SavedVariables\NoobsForeverDungeonMapper.lua`.
+      It holds the area names you walked through, so we can fill in more "you are here" areas.
+
+## 5. Placing boss pins (helps everyone)
+
+Many bosses have no pin yet. In Options, tick *Help map the bosses*.
+
+- [ ] Open a dungeon's map. Bosses without a pin say "(no pin yet)" in the list.
+- [ ] Click a boss in the list, then click the spot on the map where it is. A pin appears at the spot you
+      clicked (**check it really is where you clicked**).
+- [ ] Right-click the map to cancel. *Remove my pin* undoes a pin.
+- [ ] In Options, *Share my boss pins* shows your pins as text. Click inside it, press Ctrl+A, then Ctrl+C,
+      and paste it to us (for example in the Noobs Forever Discord).
+
+## 6. If something goes wrong
+
+- A red error box: screenshot it, or copy the text. Tell us what you clicked just before.
+- A map picture that is a solid green square, or missing: tell us the dungeon, and your game language.
+- Anything that looks too big, too small or overlapping: a screenshot and your UI scale setting.
+
+Thank you for testing!

@@ -51,10 +51,22 @@ in combat. Your normal size comes back when you leave the dungeon. Turn it on wi
 
 ## Install
 
-1. Copy the `NoobsForeverDungeonMapper` folder into
-   `World of Warcraft\_forever_\Interface\AddOns\`. The game-version folder may be named
-   differently on your install; it is the one that contains `Wow.exe` for Forever.
-2. Restart the game or type `/reload`, and make sure *Noobs Forever Dungeon Mapper* is ticked in the AddOns list.
+**Players:** download the addon zip from the
+[Releases page](https://github.com/rickbme/noobs-forever-dungeon-mapper/releases) (the file named
+`NoobsForeverDungeonMapper-<version>.zip` under *Assets*). It contains only the addon and a short
+`HOW-TO-INSTALL.txt`, nothing else.
+
+> Don't use the green *Code > Download ZIP* button: that gives you the source code and tools, not the addon.
+
+1. Close the game. Open the game's folder (the one that holds `_forever_`) and go into
+   `_forever_\Interface\AddOns`. Delete any older `NoobsForeverDungeonMapper` or `ForeverDungeons` folder there.
+2. Copy the `NoobsForeverDungeonMapper` folder from the zip into `AddOns`. Inside it you should see
+   `NoobsForeverDungeonMapper.toc` straight away (not another folder).
+3. Start the game and make sure *Noobs Forever Dungeon Mapper* is ticked in the AddOns list at the
+   character screen. A full restart is needed the first time: it comes with new picture files.
+
+**Developers:** clone the repository; the addon folder is `NoobsForeverDungeonMapper/`. Build the same zip
+with `python3 -P tools/package.py v<version>`.
 
 ## Commands
 
