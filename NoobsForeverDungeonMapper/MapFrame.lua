@@ -531,15 +531,27 @@ function ns.ViewedInstance() return view.instanceID end
 
 function ns.HideMap() if f then f:Hide() end end
 
-function ns.ToggleMap()
-    if f and f:IsShown() then return f:Hide() end
-    local id = ns.CurrentInstance()
-    if id then
-        ns.ShowDungeon(id, ns.GuessFloor(id))
-    elseif ns.db.lastViewed and ns.Dungeons[ns.db.lastViewed] then
+-- The last dungeon looked at, or the list to pick one from.
+function ns.ShowLastDungeon()
+    if ns.db.lastViewed and ns.Dungeons[ns.db.lastViewed] then
         ns.ShowDungeon(ns.db.lastViewed)
     else
         ns.ShowDungeonMenu()
+    end
+end
+
+-- The map button and key: in a dungeon, its map; outside, the world map where the player is (so a
+-- dungeon icon on it leads to the dungeon's map), unless the player turned that off in the options.
+function ns.ToggleMap()
+    if f and f:IsShown() then return f:Hide() end
+    if ns.WorldMapShown() then return ns.HideWorldMap() end
+    local id = ns.CurrentInstance()
+    if id then
+        ns.ShowDungeon(id, ns.GuessFloor(id))
+    elseif ns.db.worldFirst ~= false then
+        ns.ShowWorldMap()
+    else
+        ns.ShowLastDungeon()
     end
 end
 

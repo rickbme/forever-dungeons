@@ -19,6 +19,7 @@ ns.DEFAULTS = {
     minimapAngle = 200,   -- its position around the minimap, in degrees
     floors = {},          -- [instanceID] = last floor viewed
     runs = {},            -- [instanceID] = { killed = { [key] = true }, last = time() }
+    worldFirst = true,    -- outside a dungeon, the map button opens the world map where you are
     placer = false,       -- mapmaker mode: click a boss, then the map, to place its pin
     bossPlaces = {},      -- [instanceID] = { [boss name] = { floor, x, y } } placed by this player
     welcomed = false,     -- the first-run popup has been shown

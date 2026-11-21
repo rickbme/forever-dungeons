@@ -23,6 +23,9 @@ local SETTINGS = {
     { label = "Open the map by itself when I enter a dungeon",
       tip = "The map appears as soon as you zone in. You can still open it any time from the minimap button.",
       get = DB("autoOpen", true), set = function(v) ns.db.autoOpen = v end },
+    { label = "Outside dungeons, open the world map where I am",
+      tip = "The map button then shows the world map. Click a dungeon icon on it to open that dungeon's map. Turn off to get the last dungeon's map instead.",
+      get = DB("worldFirst", true), set = function(v) ns.db.worldFirst = v end },
     { label = "Close the map when I leave the dungeon",
       get = DB("autoClose", true), set = function(v) ns.db.autoClose = v end },
     { label = "Turn to the next boss's floor after a kill",
@@ -115,7 +118,7 @@ end
 
 local function CreateOptions()
     opt = CreateFrame("Frame", "NoobsForeverDungeonMapperOptions", UIParent, "BackdropTemplate")
-    opt:SetSize(WIDTH, 600)
+    opt:SetSize(WIDTH, 634)
     opt:SetPoint("CENTER")
     opt:SetFrameStrata("DIALOG")
     opt:SetToplevel(true)
@@ -236,7 +239,7 @@ end
 local WELCOME = table.concat({
     "|cffffd100Walk into a dungeon|r and its map opens by itself.",
     "",
-    "|cffffd100The map icon on your minimap|r shows or hides the map. Right-click it for the list of dungeons and the options.",
+    "|cffffd100The map icon on your minimap|r shows or hides the map. Outside a dungeon it opens the world map where you are: click a dungeon icon on it to see that dungeon's map. Right-click the icon for the list of dungeons and the options.",
     "",
     "|cffffd100In the map:|r click a boss on the list to find it, right-click a boss to tick it off. The blue marker shows the area you are in.",
     "",
@@ -245,7 +248,7 @@ local WELCOME = table.concat({
 
 local function CreateWelcome()
     welcome = CreateFrame("Frame", "NoobsForeverDungeonMapperWelcome", UIParent, "BackdropTemplate")
-    welcome:SetSize(420, 330)
+    welcome:SetSize(420, 360)
     welcome:SetPoint("CENTER", 0, 60)
     welcome:SetFrameStrata("DIALOG")
     welcome:SetToplevel(true)

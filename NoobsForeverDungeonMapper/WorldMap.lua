@@ -40,6 +40,59 @@ local function HighlightedID()
     return ns.CurrentInstance() or ns.ViewedInstance()
 end
 
+-- The continent map (Eastern Kingdoms or Kalimdor) the player is on, found by walking up from the zone
+-- the game reports for them. Only works outdoors: inside a dungeon the game gives no map at all.
+local function PlayerContinent()
+    if not (C_Map and C_Map.GetBestMapForUnit) then return nil end
+    local ok, m = pcall(C_Map.GetBestMapForUnit, "player")
+    m = ok and ns.Safe(m) or nil
+    for _ = 1, 8 do
+        if not m or m == 0 then return nil end
+        if m == 1414 or m == 1415 then return m end
+        local info = C_Map.GetMapInfo and C_Map.GetMapInfo(m)
+        m = info and ns.Safe(info.parentMapID) or nil
+    end
+end
+
+-- Where the player stands on a continent (0..1 across and down), or nil.
+local function PlayerSpot(continent)
+    if not (C_Map and C_Map.GetPlayerMapPosition) then return nil end
+    local ok, pos = pcall(C_Map.GetPlayerMapPosition, continent, "player")
+    if not (ok and pos and pos.GetXY) then return nil end
+    local x, y = pos:GetXY()
+    x, y = ns.Safe(x), ns.Safe(y)
+    if type(x) == "number" and type(y) == "number" and x >= 0 and x <= 1 and y >= 0 and y <= 1 and (x > 0 or y > 0) then
+        return x, y
+    end
+end
+
+-- Where to put the "you are here" marker on the map being shown, or nil if the player isn't on it.
+local function MarkerSpot(data)
+    if ns.CurrentInstance() then return nil end
+    local continent = PlayerContinent()
+    if not continent then return nil end
+    if data.uiMapID == continent then return PlayerSpot(continent) end
+    if data.uiMapID == WORLD then
+        local x, y = PlayerSpot(continent)
+        for _, sub in ipairs(data.sub or {}) do
+            if x and sub[1] == continent then return sub[2] + x * sub[4], sub[3] + y * sub[5] end
+        end
+    end
+end
+
+local function UpdateMarker()
+    if not (f and f.me) then return end
+    local x, y
+    if current then x, y = MarkerSpot(current) end
+    if x then
+        f.me:ClearAllPoints()
+        f.me:SetPoint("CENTER", f.canvas, "TOPLEFT", x * MAP_W, -y * MAP_H)
+        f.me:Show()
+    else
+        f.me:Hide()
+    end
+end
+
 local function LevelText(inst)
     if inst[4] == inst[5] then return tostring(inst[4]) end
     return inst[4] .. "-" .. inst[5]
@@ -163,11 +216,36 @@ local function Create()
             prev = b
         end
     end
+    -- "You are here": where the game says the player is, when they are outdoors
+    f.me = CreateFrame("Button", nil, f.canvas)
+    f.me:SetSize(24, 24)
+    f.me:SetFrameLevel(f.canvas:GetFrameLevel() + 9)
+    f.me.ring = CircleTexture(f.me, "ARTWORK", 24)
+    f.me.ring:SetPoint("CENTER")
+    f.me.ring:SetVertexColor(1, 1, 1, 1)
+    f.me.dot = CircleTexture(f.me, "OVERLAY", 16)
+    f.me.dot:SetPoint("CENTER")
+    f.me.dot:SetVertexColor(0.2, 0.85, 0.3, 1)
+    f.me:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText("You are here")
+        GameTooltip:Show()
+    end)
+    f.me:SetScript("OnLeave", GameTooltip_Hide)
+    f.me:Hide()
+    local sinceUpdate = 0
+    f:SetScript("OnUpdate", function(_, elapsed)
+        sinceUpdate = sinceUpdate + elapsed
+        if sinceUpdate >= 0.5 then
+            sinceUpdate = 0
+            UpdateMarker()
+        end
+    end)
     f.back = SmallButton(f, "Dungeon map", 100)
     f.back:SetPoint("TOPRIGHT", f.canvas, "BOTTOMRIGHT", 0, -8)
     f.back:SetScript("OnClick", function()
         f:Hide()
-        ns.ToggleMap()
+        ns.ShowLastDungeon()
     end)
     f.hint = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     f.hint:SetPoint("LEFT", prev, "RIGHT", 14, 0)
@@ -231,23 +309,34 @@ local function Draw()
         r:Show()
     end
     for uiMapID, b in pairs(f.tabs) do b:SetEnabled(uiMapID ~= data.uiMapID) end
+    UpdateMarker()
 end
 
 -- Pick the map that has the entrance of the dungeon the player is in or looked at, else the last one.
-local function DefaultMap()
-    local here = HighlightedID()
-    if here then
-        for _, m in ipairs(ns.WorldMaps or {}) do
-            if m.uiMapID ~= WORLD then
-                for _, pin in ipairs(m.pins) do
-                    for _, inst in ipairs(pin[3]) do
-                        if inst[1] == here then return m.uiMapID end
-                    end
+local function ContinentOfInstance(id)
+    for _, m in ipairs(ns.WorldMaps or {}) do
+        if m.uiMapID ~= WORLD then
+            for _, pin in ipairs(m.pins) do
+                for _, inst in ipairs(pin[3]) do
+                    if inst[1] == id then return m.uiMapID end
                 end
             end
         end
     end
-    return ns.db.worldMap or WORLD
+end
+
+-- Which map to open: inside a dungeon, the continent of its entrance; outdoors, the continent the player
+-- stands on; else the continent of the dungeon looked at last, else the one shown last, else the world.
+local function DefaultMap()
+    local inside = ns.CurrentInstance()
+    if inside then
+        local m = ContinentOfInstance(inside)
+        if m then return m end
+    end
+    local here = PlayerContinent()
+    if here then return here end
+    local viewed = ns.ViewedInstance()
+    return (viewed and ContinentOfInstance(viewed)) or ns.db.worldMap or WORLD
 end
 
 function ns.ShowWorldMap(uiMapID)
@@ -270,3 +359,4 @@ function ns.ToggleWorldMap()
 end
 
 function ns.HideWorldMap() if f then f:Hide() end end
+function ns.WorldMapShown() return f ~= nil and f:IsShown() end

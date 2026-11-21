@@ -92,7 +92,17 @@ function IsIndoors() return true end
 function GetUnitSpeed() return 0, 7, 7, 4.7 end
 function UnitPosition() return nil end
 function GetPlayerFacing() return nil end
-C_Map = { GetBestMapForUnit = function() return nil end }
+-- a tiny map tree: Elwynn Forest (1429) is in the Eastern Kingdoms (1415), Durotar (1411) in Kalimdor (1414)
+local mapParent = { [1429] = 1415, [1411] = 1414, [1415] = 947, [1414] = 947 }
+C_Map = {
+    GetBestMapForUnit = function() return game.mapID end,
+    GetMapInfo = function(id) return { parentMapID = mapParent[id] or 0 } end,
+    GetPlayerMapPosition = function(id)
+        if game.pos and id == game.posMap then
+            return { GetXY = function() return game.pos[1], game.pos[2] end }
+        end
+    end,
+}
 function InCombatLockdown() return game.combat end
 local cursor = { 0, 0 }
 function GetCursorPosition() return cursor[1], cursor[2] end
@@ -217,7 +227,8 @@ game.combat = false
 Fire("PLAYER_REGEN_ENABLED")
 check(Minimap:GetScale() == 1, "minimap restored after combat")
 
-realPrint("Slash command opens the last dungeon outside")
+realPrint("Slash command opens the last dungeon outside (world map first turned off)")
+ns.db.worldFirst = false
 SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("")
 check(NoobsForeverDungeonMapperFrame:IsShown() and ns.ViewedInstance() == 48, "/fd reopens the last viewed dungeon")
 check(NoobsForeverDungeonMapperFrame.location.text:find("Viewing only", 1, true), "outside, the map says it is only a preview")
@@ -231,6 +242,48 @@ SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("button")
 check(not mb:IsShown(), "/fd button hides the button")
 SlashCmdList.NOOBSFOREVERDUNGEONMAPPER("button")
 check(mb:IsShown(), "/fd button shows it again")
+ns.db.worldFirst = true
+ns.HideMap()
+
+realPrint("The map button opens the world map where the player is")
+local world2
+ns.HideMap(); ns.HideWorldMap()
+game.mapID, game.posMap, game.pos = 1429, 1415, { 0.5, 0.4 }
+mb.scripts.OnClick(mb, "LeftButton")
+world2 = NoobsForeverDungeonMapperWorld
+check(world2:IsShown() and world2.title:GetText() == "Eastern Kingdoms", "outside, the button opens the continent the player is on")
+check(world2.me:IsShown(), "a marker shows where the player stands")
+world2.scripts.OnUpdate(world2, 1)
+check(world2.me:IsShown(), "the marker stays after an update")
+mb.scripts.OnClick(mb, "LeftButton")
+check(not world2:IsShown(), "pressing the button again hides the world map")
+game.mapID, game.posMap, game.pos = 1411, 1414, { 0.3, 0.6 }
+mb.scripts.OnClick(mb, "LeftButton")
+check(world2.title:GetText() == "Kalimdor", "in Durotar it opens Kalimdor")
+ns.ShowWorldMap(947)
+check(world2.me:IsShown(), "the marker also shows on the world map")
+ns.ShowWorldMap(1415)
+check(not world2.me:IsShown(), "no marker on a continent the player isn't on")
+game.pos = nil
+ns.ShowWorldMap(1414)
+check(not world2.me:IsShown(), "no marker when the game gives no position")
+world2.back.scripts.OnClick()
+check(not world2:IsShown() and NoobsForeverDungeonMapperFrame:IsShown(), "the Dungeon map button goes back to a dungeon")
+ns.HideMap()
+ns.db.worldFirst = false
+mb.scripts.OnClick(mb, "LeftButton")
+check(not world2:IsShown() and NoobsForeverDungeonMapperFrame:IsShown(), "with the option off, the button opens the last dungeon")
+ns.db.worldFirst = true
+ns.HideMap()
+game.mapID, game.pos = nil, nil
+game.inInstance, game.instanceType, game.instanceID, game.instanceName = true, "party", 389, "Ragefire Chasm"
+Fire("PLAYER_ENTERING_WORLD")
+ns.HideMap()
+mb.scripts.OnClick(mb, "LeftButton")
+check(NoobsForeverDungeonMapperFrame:IsShown() and not world2:IsShown(), "inside a dungeon, the button opens the dungeon's map")
+game.inInstance, game.instanceType, game.instanceID, game.instanceName = false, "none", nil, nil
+Fire("PLAYER_ENTERING_WORLD")
+ns.HideMap()
 
 realPrint("A new Forever dungeon without art")
 ns.ShowDungeon(2994)

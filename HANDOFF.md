@@ -27,7 +27,7 @@ no slash commands are needed (`/fd` still works as a shortcut).
 | "You are here" marker by sub-zone (only The Hall of Thanes has anchors) | **Not checked** |
 | `/fd probe` and sub-zone recording | **Not checked: its results are needed** |
 | Boss pin placer + "Share my boss pins" | **Not checked, click-to-map conversion untested** |
-| World map (Azeroth, both continents) with entrances | **Not checked** |
+| World map (Azeroth, both continents) with entrances; opens on the player's continent with a marker outdoors | **Not checked** |
 
 Follow [docs/in-game-checklist.md](docs/in-game-checklist.md) for the in-game pass.
 

@@ -26,7 +26,12 @@ and copy any red error text. That's all we need.
 
 ## 2. The world map
 
-- [ ] Open it (*World map* button, the minimap right-click menu, or its key). Azeroth shows with red dots.
+- [ ] Stand outside, anywhere in the open world, and click the minimap button. The world map opens on the
+      continent you are on, with a **green marker** where you stand. Does the marker match your real spot?
+      (If it opens on the wrong continent or there is no marker, tell us your zone.)
+- [ ] Click the minimap button again: it hides. In *Options*, "Outside dungeons, open the world map where I
+      am" turns this off (the button then opens the last dungeon's map instead).
+- [ ] Open it from a dungeon (*World map* button, the minimap right-click menu, or its key). Azeroth shows with red dots.
 - [ ] Clicking *Eastern Kingdoms* or *Kalimdor* (the buttons below the map, or the continent itself) zooms in.
 - [ ] The dots sit on the right places: for example Deadmines in Westfall, Stockade in Stormwind,
       Ragefire Chasm by Orgrimmar, Wailing Caverns in the Barrens. **Note any dot that is clearly wrong.**

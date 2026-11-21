@@ -125,3 +125,11 @@ This is the riskiest gap: the addon has never run in the live game.
 - Risk to check: OpenMap found some non-English clients draw the game's dungeon map tiles as solid green
   squares (their `Data/Forever/Tiles.lua` copies the tiles into the addon instead). Our dungeon maps from the
   client may hit this on those languages; the continent tiles could too. Tell us if players report it.
+
+## Status 2026-11-20 (world map opens where you are)
+
+- Outside a dungeon the minimap button / key opens the world map on the continent the player is on, with a green
+  "you are here" marker (position from `C_Map.GetPlayerMapPosition` on the continent; refreshed twice a second).
+  Option "Outside dungeons, open the world map where I am" (default on) turns it off. Inside a dungeon the button
+  still opens the dungeon map; clicking an entrance on the world map opens that dungeon's map (already built).
+- Unverified in game: that the game answers `GetBestMapForUnit` / `GetPlayerMapPosition` for continent IDs on Forever.
